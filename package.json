@@ -1,0 +1,196 @@
+{
+  "name": "custom-language-config",
+  "displayName": "Custom Language Config",
+  "version": "0.0.0",
+  "description": "",
+  "categories": [
+    "Formatters",
+    "Linters",
+    "Other",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "configuration",
+    "custom",
+    "formatter",
+    "language",
+    "language server",
+    "lsp"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CatBraaain/custom-language-config"
+  },
+  "publisher": "CatBraaain",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "compile": "vp pack",
+    "package": "vsce package",
+    "pretest": "bun run compile",
+    "test": "vp test",
+    "test:performance": "bun run ./dist/test/performanceTest.js",
+    "vscode:prepublish": "bun run compile"
+  },
+  "dependencies": {
+    "jsonc-parser": "^3.2.0",
+    "string-argv": "^0.3.2",
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-electron": "^2.3.0",
+    "@vscode/vsce": "^2.19.0",
+    "typescript": "^5.0.0",
+    "vite-plus": "^0.1.20"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "unifiedLanguageConfig.manualRestartLSP",
+        "title": "Manual Restart LSP",
+        "category": "Unified Language Config"
+      }
+    ],
+    "configuration": {
+      "title": "Unified Language Config",
+      "properties": {
+        "customLanguageConfig.rules": {
+          "type": "array",
+          "default": [],
+          "description": "Rule-based configuration - Apply LSP, formatter, and language properties based on conditions",
+          "items": {
+            "type": "object",
+            "properties": {
+              "when": {
+                "type": "object",
+                "description": "Conditions for rule application",
+                "properties": {
+                  "langs": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Target language IDs (applies to all languages if not specified)"
+                  },
+                  "required": {
+                    "type": "object",
+                    "description": "Required file and pattern conditions",
+                    "properties": {
+                      "file": {
+                        "type": "string",
+                        "description": "Required file regex pattern (e.g., package\\.json, tsconfig\\.json)"
+                      },
+                      "contains": {
+                        "type": "string",
+                        "description": "Pattern that must be contained in the file (regex)"
+                      }
+                    },
+                    "required": [
+                      "file"
+                    ]
+                  }
+                }
+              },
+              "use": {
+                "type": "object",
+                "description": "Settings to apply when conditions match",
+                "properties": {
+                  "lsp": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Array of LSP server commands"
+                  },
+                  "formatter": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Array of formatter commands"
+                  },
+                  "langprops": {
+                    "type": "object",
+                    "description": "Language properties configuration",
+                    "properties": {
+                      "comments": {
+                        "type": "object",
+                        "properties": {
+                          "lineComment": {
+                            "type": "string"
+                          },
+                          "blockComment": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 2,
+                            "maxItems": 2
+                          }
+                        }
+                      },
+                      "brackets": {
+                        "type": "array",
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "minItems": 2,
+                          "maxItems": 2
+                        }
+                      },
+                      "autoClosingPairs": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "open": {
+                              "type": "string"
+                            },
+                            "close": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "open",
+                            "close"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "required": [
+              "when",
+              "use"
+            ]
+          }
+        },
+        "customLanguageConfig.logLevel": {
+          "type": "string",
+          "enum": [
+            "debug",
+            "info",
+            "warn",
+            "error",
+            "critical"
+          ],
+          "default": "info",
+          "markdownDescription": "Log level for the extension output\n\n- **debug**: Detailed diagnostic information\n- **info**: General informational messages (default)\n- **warn**: Warning messages\n- **error**: Error messages\n- **critical**: Critical errors only\n\n**ログレベル**:\n- **debug**: 詳細な診断情報\n- **info**: 一般的な情報メッセージ (デフォルト)\n- **warn**: 警告メッセージ\n- **error**: エラーメッセージ\n- **critical**: 重大なエラーのみ"
+        }
+      }
+    }
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "engines": {
+    "vscode": "^1.85.0"
+  }
+}
