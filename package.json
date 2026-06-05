@@ -2,6 +2,7 @@
   "name": "custom-language-config",
   "displayName": "Custom Language Config",
   "version": "0.0.0",
+  "private": true,
   "description": "",
   "categories": [
     "Formatters",
