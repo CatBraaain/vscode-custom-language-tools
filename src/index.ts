@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-// import { registerLangProps } from "./language";
+import { registerLangConfig } from "./language";
 import { registerLsp } from "./lsp";
 import { getMatchedRules } from "./config";
 import { registerFormatter } from "./formatter";
@@ -40,10 +40,9 @@ async function registerCustomLanguageConfig(): Promise<vscode.Disposable[]> {
           disposables.push(registerFormatter(lang, e));
         });
       }
-      // if (rule.use.langProps) {
-      //   // disposables.push(registerLangProps(lang, rule.use.langProps));
-      //   await registerLangProps(lang, rule.use.langProps ?? {});
-      // }
+      if (rule.use.langConfig) {
+        disposables.push(await registerLangConfig(lang, rule.use.langConfig));
+      }
     }
   }
   return disposables;

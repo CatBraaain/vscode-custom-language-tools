@@ -62,10 +62,10 @@ export type Required = {
 export type Use = {
   lsp?: string[]; // cli commands
   formatter?: string[]; // cli commands
-  langProps?: LangProps;
+  langConfig?: LangConfig;
 };
 
-export type LangProps = {
+export type LangConfig = {
   comments?: {
     lineComment?: string;
     blockComment?: [string, string];

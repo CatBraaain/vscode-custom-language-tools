@@ -113,7 +113,7 @@
                     },
                     "description": "Array of formatter commands"
                   },
-                  "langprops": {
+                  "langConfig": {
                     "type": "object",
                     "description": "Language properties configuration",
                     "properties": {
