@@ -1,3 +1,4 @@
+import { parseArgsStringToArgv } from "string-argv";
 import * as vscode from "vscode";
 import {
   LanguageClient,
@@ -7,7 +8,6 @@ import {
   ErrorAction,
   CloseAction,
 } from "vscode-languageclient/node";
-import { parseArgsStringToArgv } from "string-argv";
 
 import { logger } from "./logger";
 

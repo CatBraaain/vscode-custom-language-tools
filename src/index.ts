@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { registerLangConfig } from "./language";
-import { registerLsp } from "./lsp";
 import { getMatchedRules } from "./config";
 import { registerFormatter } from "./formatter";
+import { registerLangConfig } from "./language";
 import { logger } from "./logger";
+import { registerLsp } from "./lsp";
 
 export async function activate(context: vscode.ExtensionContext) {
   logger.info("Activating Unified Language Config extension...");

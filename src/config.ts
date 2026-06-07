@@ -6,9 +6,7 @@ export async function getMatchedRules(): Promise<Rule[]> {
   const resolvedRules = await Promise.all(
     rules.map(async (rule) => ({
       rule,
-      matched:
-        rule.when.required === undefined ||
-        (await isRequiredSatisfied(rule.when.required)),
+      matched: rule.when.required === undefined || (await isRequiredSatisfied(rule.when.required)),
     })),
   );
   return resolvedRules.filter(({ matched }) => matched).map(({ rule }) => rule);
