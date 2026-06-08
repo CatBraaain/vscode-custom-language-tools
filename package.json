@@ -25,22 +25,24 @@
   },
   "publisher": "CatBraaain",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/prod/index.js",
   "scripts": {
-    "compile": "vp pack",
+    "build": "vp pack -d dist/prod",
+    "build:test": "vp pack test/suite/*.test.ts -f cjs -d dist/test --sourcemap",
     "package": "vsce package",
-    "pretest": "bun run compile",
-    "test": "vp test",
-    "test:performance": "bun run ./dist/test/performanceTest.js",
-    "vscode:prepublish": "bun run compile"
+    "pretest": "bun run build && bun run build:test",
+    "test": "vscode-test",
+    "vscode:prepublish": "bun run build"
   },
   "dependencies": {
     "string-argv": "^0.3.2",
     "vscode-languageclient": "^9.0.1"
   },
   "devDependencies": {
+    "@types/mocha": "^10.0.10",
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.85.0",
+    "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.3.0",
     "@vscode/vsce": "^2.19.0",
     "typescript": "^5.0.0",

@@ -11,19 +11,6 @@ export default defineConfig({
     },
     fixedExtension: false,
   },
-  test: {
-    globals: true,
-    environment: "node",
-    // Only run unit tests that don't require VSCode API
-    include: ["src/test/**/*.test.ts", "src/test/performanceTest.ts"],
-    exclude: [
-      "node_modules",
-      "dist",
-      ".vscode-test",
-      "src/test/lsp.test.ts",
-      "src/test/runTest.ts",
-    ],
-  },
   fmt: {
     sortImports: true,
     sortPackageJson: {
@@ -45,11 +32,6 @@ export default defineConfig({
           },
         },
       ],
-    },
-    settings: {
-      vitest: {
-        typecheck: false,
-      },
     },
     env: {
       builtin: true,
