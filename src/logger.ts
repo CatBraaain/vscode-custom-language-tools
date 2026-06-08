@@ -9,12 +9,20 @@ export enum LogLevel {
 }
 
 export class Logger {
+  private static _instance: Logger;
   private outputChannel: vscode.OutputChannel;
   private minLevel: LogLevel;
 
-  constructor() {
+  private constructor() {
     this.outputChannel = vscode.window.createOutputChannel("Unified Language Config");
     this.minLevel = this.getLogLevelFromConfig();
+  }
+
+  static get instance(): Logger {
+    if (!Logger._instance) {
+      Logger._instance = new Logger();
+    }
+    return Logger._instance;
   }
 
   private getLogLevelFromConfig(): LogLevel {
@@ -41,49 +49,47 @@ export class Logger {
     return level >= this.minLevel;
   }
 
-  debug(message: string, context?: any): void {
-    if (this.shouldLog(LogLevel.DEBUG)) {
-      this.outputChannel.appendLine(this.formatMessage("DEBUG", message, context));
+  static debug(message: string, context?: any): void {
+    if (Logger.instance.shouldLog(LogLevel.DEBUG)) {
+      Logger.instance.outputChannel.appendLine(Logger.instance.formatMessage("DEBUG", message, context));
     }
   }
 
-  info(message: string, context?: any): void {
-    if (this.shouldLog(LogLevel.INFO)) {
-      this.outputChannel.appendLine(this.formatMessage("INFO", message, context));
+  static info(message: string, context?: any): void {
+    if (Logger.instance.shouldLog(LogLevel.INFO)) {
+      Logger.instance.outputChannel.appendLine(Logger.instance.formatMessage("INFO", message, context));
     }
   }
 
-  warn(message: string, context?: any): void {
-    if (this.shouldLog(LogLevel.WARN)) {
-      this.outputChannel.appendLine(this.formatMessage("WARN", message, context));
+  static warn(message: string, context?: any): void {
+    if (Logger.instance.shouldLog(LogLevel.WARN)) {
+      Logger.instance.outputChannel.appendLine(Logger.instance.formatMessage("WARN", message, context));
     }
   }
 
-  error(message: string, context?: any): void {
-    if (this.shouldLog(LogLevel.ERROR)) {
-      this.outputChannel.appendLine(this.formatMessage("ERROR", message, context));
+  static error(message: string, context?: any): void {
+    if (Logger.instance.shouldLog(LogLevel.ERROR)) {
+      Logger.instance.outputChannel.appendLine(Logger.instance.formatMessage("ERROR", message, context));
       if (context instanceof Error) {
-        this.outputChannel.appendLine(`  Stack: ${context.stack}`);
+        Logger.instance.outputChannel.appendLine(`  Stack: ${context.stack}`);
       }
     }
   }
 
-  critical(message: string, context?: any): void {
-    if (this.shouldLog(LogLevel.CRITICAL)) {
-      this.outputChannel.appendLine(this.formatMessage("CRITICAL", message, context));
+  static critical(message: string, context?: any): void {
+    if (Logger.instance.shouldLog(LogLevel.CRITICAL)) {
+      Logger.instance.outputChannel.appendLine(Logger.instance.formatMessage("CRITICAL", message, context));
       if (context instanceof Error) {
-        this.outputChannel.appendLine(`  Stack: ${context.stack}`);
+        Logger.instance.outputChannel.appendLine(`  Stack: ${context.stack}`);
       }
     }
   }
 
-  show(): void {
-    this.outputChannel.show();
+  static show(): void {
+    Logger.instance.outputChannel.show();
   }
 
-  dispose(): void {
-    this.outputChannel.dispose();
+  static dispose(): void {
+    Logger.instance.outputChannel.dispose();
   }
 }
-
-export const logger = new Logger();

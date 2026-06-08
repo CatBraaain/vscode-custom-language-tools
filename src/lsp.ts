@@ -9,12 +9,12 @@ import {
   CloseAction,
 } from "vscode-languageclient/node";
 
-import { logger } from "./logger";
+import { Logger } from "./logger";
 
 export async function registerLsp(lang: string, command: string): Promise<vscode.Disposable> {
   const [cmd, ...args] = parseArgsStringToArgv(command);
 
-  logger.info(`Registering LSP for ${lang}: ${command}`);
+  Logger.info(`Registering LSP for ${lang}: ${command}`);
 
   const client = new LanguageClient(
     `Custom LSP: ${command}`,

@@ -3,7 +3,7 @@ import { execFile } from "node:child_process";
 import { parseArgsStringToArgv } from "string-argv";
 import * as vscode from "vscode";
 
-import { logger } from "./logger";
+import { Logger } from "./logger";
 
 export function registerFormatter(lang: string, command: string): vscode.Disposable {
   const [cmd, ...args] = parseArgsStringToArgv(command);
@@ -60,17 +60,17 @@ function formatDocument(
       },
       (error, stdout, stderr) => {
         if (token.isCancellationRequested) {
-          logger.debug(`Formatter cancelled (${cmd})`);
+          Logger.debug(`Formatter cancelled (${cmd})`);
           resolve([]);
           return;
         }
         if (error) {
-          logger.error(`Formatter error (${cmd}): ${error.message}`);
+          Logger.error(`Formatter error (${cmd}): ${error.message}`);
           resolve([]);
           return;
         }
         if (stderr) {
-          logger.warn(`Formatter stderr (${cmd}): ${stderr}`);
+          Logger.warn(`Formatter stderr (${cmd}): ${stderr}`);
         }
 
         const targetRange =

@@ -3,11 +3,11 @@ import * as vscode from "vscode";
 import { getMatchedRules } from "./config";
 import { registerFormatter } from "./formatter";
 import { registerLangConfig } from "./language";
-import { logger } from "./logger";
+import { Logger } from "./logger";
 import { registerLsp } from "./lsp";
 
 export async function activate(context: vscode.ExtensionContext) {
-  logger.info("Activating Unified Language Config extension...");
+  Logger.info("Activating Unified Language Config extension...");
 
   let registrations: vscode.Disposable[] = [];
 
@@ -23,7 +23,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
   );
 
-  logger.info("Unified Language Config extension activated");
+  Logger.info("Unified Language Config extension activated");
 }
 
 async function registerCustomLanguageConfig(): Promise<vscode.Disposable[]> {
