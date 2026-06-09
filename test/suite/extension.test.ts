@@ -1,5 +1,6 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
+import { suite, test } from "mocha";
 
 suite("Extension Integration", () => {
   test("extension is active", () => {

@@ -1,5 +1,6 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
+import { suite, teardown, test } from "mocha";
 
 import { Logger } from "../../src/logger";
 
