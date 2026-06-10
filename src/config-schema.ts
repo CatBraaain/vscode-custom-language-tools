@@ -36,7 +36,7 @@ const Required = z.object({
   contains: z.string().optional().describe("Pattern that must be contained in the file (regex)"),
 });
 
-const RuleSchema = z.object({
+export const RuleSchema = z.object({
   when: z.object({
     langs: z.array(z.string()).describe("Target language IDs"),
     required: Required.optional().describe("Required file and content matching conditions"),
@@ -49,8 +49,8 @@ const RuleSchema = z.object({
   }),
 });
 
-const LogLevelSchema = z
-  .enum(["debug", "info", "warn", "error", "critical"])
+export const LogLevelSchema = z
+  .enum(["debug", "info", "warn", "error"])
   .default("info")
   .describe("Log level for extension output");
 

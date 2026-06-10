@@ -1,9 +1,11 @@
 import * as vscode from "vscode";
-import { Rule, Required } from "./config-schema";
+import { RuleSchema, Rule, Required } from "./config-schema";
+import { z } from "zod";
 
 export async function getMatchedRules(): Promise<Rule[]> {
-  const rules: Rule[] =
-    vscode.workspace.getConfiguration("customLanguageConfig").get("rules") ?? [];
+  const rules: Rule[] = z
+    .array(RuleSchema)
+    .parse(vscode.workspace.getConfiguration("customLanguageConfig").get("rules") ?? []);
   const resolvedRules = await Promise.all(
     rules.map(async (rule) => ({
       rule,
