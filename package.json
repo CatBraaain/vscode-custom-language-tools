@@ -60,91 +60,118 @@
     "configuration": {
       "title": "Unified Language Config",
       "properties": {
+        "customLanguageConfig.logLevel": {
+          "default": "info",
+          "description": "Log level for extension output",
+          "type": "string",
+          "enum": [
+            "debug",
+            "info",
+            "warn",
+            "error",
+            "critical"
+          ]
+        },
         "customLanguageConfig.rules": {
-          "type": "array",
           "default": [],
-          "description": "Rule-based configuration - Apply LSP, formatter, and language properties based on conditions",
+          "description": "Rule-based configuration",
+          "type": "array",
           "items": {
             "type": "object",
             "properties": {
               "when": {
                 "type": "object",
-                "description": "Conditions for rule application",
                 "properties": {
                   "langs": {
                     "type": "array",
                     "items": {
                       "type": "string"
                     },
-                    "description": "Target language IDs (applies to all languages if not specified)"
+                    "description": "Target language IDs"
                   },
                   "required": {
+                    "description": "Required file and content matching conditions",
                     "type": "object",
-                    "description": "Required file and pattern conditions",
                     "properties": {
                       "file": {
                         "type": "string",
-                        "description": "Required file regex pattern (e.g., package\\.json, tsconfig\\.json)"
+                        "description": "Required file regex pattern (e.g. package\\.json, tsconfig\\.json)"
                       },
                       "contains": {
-                        "type": "string",
-                        "description": "Pattern that must be contained in the file (regex)"
+                        "description": "Pattern that must be contained in the file (regex)",
+                        "type": "string"
                       }
                     },
                     "required": [
                       "file"
                     ]
                   }
-                }
+                },
+                "required": [
+                  "langs"
+                ]
               },
               "use": {
                 "type": "object",
-                "description": "Settings to apply when conditions match",
                 "properties": {
                   "lsp": {
+                    "description": "Array of lsp commands",
                     "type": "array",
                     "items": {
                       "type": "string"
-                    },
-                    "description": "Array of LSP server commands"
+                    }
                   },
                   "formatter": {
+                    "description": "Array of formatter commands",
                     "type": "array",
                     "items": {
                       "type": "string"
-                    },
-                    "description": "Array of formatter commands"
+                    }
                   },
                   "langConfig": {
-                    "type": "object",
                     "description": "Language properties configuration",
+                    "type": "object",
                     "properties": {
                       "comments": {
                         "type": "object",
                         "properties": {
                           "lineComment": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "Line comment token"
                           },
                           "blockComment": {
                             "type": "array",
-                            "items": {
-                              "type": "string"
-                            },
-                            "minItems": 2,
-                            "maxItems": 2
+                            "prefixItems": [
+                              {
+                                "type": "string",
+                                "description": "Block comment start token"
+                              },
+                              {
+                                "type": "string",
+                                "description": "Block comment end token"
+                              }
+                            ],
+                            "description": "Block comment delimiters"
                           }
-                        }
+                        },
+                        "description": "Comment configuration"
                       },
                       "brackets": {
                         "type": "array",
                         "items": {
                           "type": "array",
-                          "items": {
-                            "type": "string"
-                          },
-                          "minItems": 2,
-                          "maxItems": 2
-                        }
+                          "prefixItems": [
+                            {
+                              "type": "string",
+                              "description": "Opening bracket"
+                            },
+                            {
+                              "type": "string",
+                              "description": "Closing bracket"
+                            }
+                          ]
+                        },
+                        "description": "Bracket pairs"
                       },
                       "autoClosingPairs": {
                         "type": "array",
@@ -152,17 +179,20 @@
                           "type": "object",
                           "properties": {
                             "open": {
-                              "type": "string"
+                              "type": "string",
+                              "description": "Opening character"
                             },
                             "close": {
-                              "type": "string"
+                              "type": "string",
+                              "description": "Closing character"
                             }
                           },
                           "required": [
                             "open",
                             "close"
                           ]
-                        }
+                        },
+                        "description": "Auto-closing character pairs"
                       }
                     }
                   }
@@ -174,18 +204,6 @@
               "use"
             ]
           }
-        },
-        "customLanguageConfig.logLevel": {
-          "type": "string",
-          "enum": [
-            "debug",
-            "info",
-            "warn",
-            "error",
-            "critical"
-          ],
-          "default": "info",
-          "markdownDescription": "Log level for the extension output\n\n- **debug**: Detailed diagnostic information\n- **info**: General informational messages (default)\n- **warn**: Warning messages\n- **error**: Error messages\n- **critical**: Critical errors only\n\n**ログレベル**:\n- **debug**: 詳細な診断情報\n- **info**: 一般的な情報メッセージ (デフォルト)\n- **warn**: 警告メッセージ\n- **error**: エラーメッセージ\n- **critical**: 重大なエラーのみ"
         }
       }
     }

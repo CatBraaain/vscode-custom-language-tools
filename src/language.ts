@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import { LangConfig } from "./config";
+import { LangConfig } from "./config-schema";
 
 export async function registerLangConfig(
   langId: string,
