@@ -34,7 +34,7 @@ describe("getConfig", () => {
     assert.deepStrictEqual(config.rules[0].use.formatter, ["prettier --write"]);
   });
 
-  test("getConfig throws on invalid rule schema", async () => {
+  test("getConfig returns empty rules on invalid rule schema", async () => {
     await cfg().update(
       "rules",
       [
@@ -45,8 +45,7 @@ describe("getConfig", () => {
       ],
       vscode.ConfigurationTarget.Workspace,
     );
-    assert.throws(() => {
-      getConfig();
-    });
+    const fallbackConfig = getConfig();
+    assert.deepEqual(fallbackConfig.rules, []);
   });
 });
