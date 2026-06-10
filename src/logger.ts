@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { LogLevelSchema } from "./config-schema";
+import { getConfig } from "./config";
 
 export enum LogLevel {
   DEBUG = 0,
@@ -26,16 +26,14 @@ export class Logger {
   }
 
   private getLogLevelFromConfig(): LogLevel {
-    const levelStr = LogLevelSchema.parse(
-      vscode.workspace.getConfiguration("customLanguageConfig").get("logLevel"),
-    );
+    const { logLevel } = getConfig();
     const levelMap: { [key: string]: LogLevel } = {
       debug: LogLevel.DEBUG,
       info: LogLevel.INFO,
       warn: LogLevel.WARN,
       error: LogLevel.ERROR,
     };
-    return levelMap[levelStr.toLowerCase()] || LogLevel.INFO;
+    return levelMap[logLevel.toLowerCase()] || LogLevel.INFO;
   }
 
   private formatMessage(level: string, message: string, context?: any): string {

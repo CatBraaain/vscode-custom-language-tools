@@ -63,6 +63,7 @@ export const ConfigSchema = z.object({
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
+export type LogLevel = z.infer<typeof LogLevelSchema>;
 export type Rule = z.infer<typeof RuleSchema>;
 export type LangConfig = z.infer<typeof LangConfigSchema>;
 export type Required = z.infer<typeof Required>;

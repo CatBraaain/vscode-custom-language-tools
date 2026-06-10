@@ -2,7 +2,54 @@ import * as assert from "assert";
 import * as vscode from "vscode";
 import { suite, teardown, test } from "mocha";
 
-import { getMatchedRules } from "../../src/config";
+import { getConfig, getMatchedRules } from "../../src/config";
+
+suite("getConfig", () => {
+  const cfg = () => vscode.workspace.getConfiguration("customLanguageConfig");
+
+  teardown(async () => {
+    await cfg().update("rules", undefined, vscode.ConfigurationTarget.Workspace);
+  });
+
+  test("getConfig returns empty rules when not set", async () => {
+    await cfg().update("rules", undefined, vscode.ConfigurationTarget.Workspace);
+    const config = getConfig();
+    assert.deepStrictEqual(config.rules, []);
+  });
+
+  test("getConfig validates and returns parsed rules", async () => {
+    await cfg().update(
+      "rules",
+      [
+        {
+          when: { langs: ["javascript"] },
+          use: { formatter: ["prettier --write"] },
+        },
+      ],
+      vscode.ConfigurationTarget.Workspace,
+    );
+    const config = getConfig();
+    assert.strictEqual(config.rules.length, 1);
+    assert.deepStrictEqual(config.rules[0].when.langs, ["javascript"]);
+    assert.deepStrictEqual(config.rules[0].use.formatter, ["prettier --write"]);
+  });
+
+  test("getConfig throws on invalid rule schema", async () => {
+    await cfg().update(
+      "rules",
+      [
+        {
+          // Missing required 'when' field
+          use: { formatter: ["prettier"] },
+        } as any,
+      ],
+      vscode.ConfigurationTarget.Workspace,
+    );
+    assert.throws(() => {
+      getConfig();
+    });
+  });
+});
 
 suite("getMatchedRules", () => {
   const cfg = () => vscode.workspace.getConfiguration("customLanguageConfig");

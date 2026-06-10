@@ -1,11 +1,23 @@
 import * as vscode from "vscode";
-import { RuleSchema, Rule, Required } from "./config-schema";
+import { RuleSchema, LogLevel, LogLevelSchema, Rule, Required } from "./config-schema";
 import { z } from "zod";
 
+export interface Config {
+  logLevel: LogLevel;
+  rules: Rule[];
+}
+
+export function getConfig(): Config {
+  const config = vscode.workspace.getConfiguration("customLanguageConfig");
+
+  return {
+    logLevel: LogLevelSchema.parse(config.get("logLevel")),
+    rules: z.array(RuleSchema).parse(config.get("rules") ?? []),
+  };
+}
+
 export async function getMatchedRules(): Promise<Rule[]> {
-  const rules: Rule[] = z
-    .array(RuleSchema)
-    .parse(vscode.workspace.getConfiguration("customLanguageConfig").get("rules") ?? []);
+  const { rules } = getConfig();
   const resolvedRules = await Promise.all(
     rules.map(async (rule) => ({
       rule,
