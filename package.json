@@ -52,13 +52,13 @@
   "contributes": {
     "commands": [
       {
-        "command": "unifiedLanguageConfig.manualRestartLSP",
+        "command": "customLanguageConfig.manualRestartLSP",
         "title": "Manual Restart LSP",
-        "category": "Unified Language Config"
+        "category": "Custom Language Config"
       }
     ],
     "configuration": {
-      "title": "Unified Language Config",
+      "title": "Custom Language Config",
       "properties": {
         "customLanguageConfig.rules": {
           "default": [],

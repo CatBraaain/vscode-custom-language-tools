@@ -7,7 +7,7 @@ import { Logger } from "./logger";
 import { registerLsp } from "./lsp";
 
 export async function activate(context: vscode.ExtensionContext) {
-  Logger.info("Activating Unified Language Config extension...");
+  Logger.info("Activating Custom Language Config extension...");
 
   let registrations: vscode.Disposable[] = [];
 
@@ -23,7 +23,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
   );
 
-  Logger.info("Unified Language Config extension activated");
+  Logger.info("Custom Language Config extension activated");
 }
 
 async function registerCustomLanguageConfig(): Promise<vscode.Disposable[]> {

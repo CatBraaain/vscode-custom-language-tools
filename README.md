@@ -1,4 +1,4 @@
-# Unified Language Config
+# Custom Language Config
 
 統合カスタム言語設定拡張機能 - フォーマッター、言語プロパティ、LSP設定を一つの拡張機能で管理します。
 

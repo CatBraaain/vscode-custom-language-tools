@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { ConfigSchema } from "../src/config-schema";
 
 const packageJsonConfiguration = {
-  title: "Unified Language Config",
+  title: "Custom Language Config",
   properties: ConfigSchema.toJSONSchema({ io: "input" }).properties,
 };
 const packageJson = JSON.parse(readFileSync("package.json", "utf-8")) as {

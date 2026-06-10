@@ -15,7 +15,7 @@ suite("Extension Integration", () => {
     const commands = ext!.packageJSON.contributes.commands as Array<{ command: string }>;
     const commandIds = commands.map((c) => c.command);
     assert.ok(
-      commandIds.includes("unifiedLanguageConfig.manualRestartLSP"),
+      commandIds.includes("customLanguageConfig.manualRestartLSP"),
       "manualRestartLSP command should be declared in package.json",
     );
   });
