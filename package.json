@@ -52,8 +52,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "customLanguageConfig.manualRestartLSP",
-        "title": "Manual Restart LSP",
+        "command": "customLanguageConfig.restartAll",
+        "title": "Restart All Language Services",
         "category": "Custom Language Config"
       }
     ],

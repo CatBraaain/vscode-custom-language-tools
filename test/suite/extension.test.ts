@@ -6,17 +6,14 @@ describe("Extension Integration", () => {
   test("extension is active", () => {
     const ext = vscode.extensions.getExtension("CatBraaain.custom-language-config");
     assert.ok(ext, "Extension should be found");
-    assert.strictEqual(ext!.isActive, true, "Extension should be active");
+    assert.ok(ext!.isActive === true, "Extension should be active");
   });
 
-  test("extension contributes manualRestartLSP command", () => {
-    const ext = vscode.extensions.getExtension("CatBraaain.custom-language-config");
-    assert.ok(ext);
-    const commands = ext!.packageJSON.contributes.commands as Array<{ command: string }>;
-    const commandIds = commands.map((c) => c.command);
+  test("extension commands is registered", async () => {
+    const registeredCommands = await vscode.commands.getCommands(true);
     assert.ok(
-      commandIds.includes("customLanguageConfig.manualRestartLSP"),
-      "manualRestartLSP command should be declared in package.json",
+      registeredCommands.includes("customLanguageConfig.restartAll"),
+      "restart command should be registered",
     );
   });
 });
