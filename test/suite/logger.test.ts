@@ -15,18 +15,16 @@ suite("Logger", () => {
     assert.ok(Logger.instance);
   });
 
-  test("debug/info/warn/error/critical do not throw", () => {
+  test("debug/info/warn/error do not throw", () => {
     assert.doesNotThrow(() => Logger.debug("debug message"));
     assert.doesNotThrow(() => Logger.info("info message"));
     assert.doesNotThrow(() => Logger.warn("warn message"));
     assert.doesNotThrow(() => Logger.error("error message"));
-    assert.doesNotThrow(() => Logger.critical("critical message"));
   });
 
-  test("error/critical with Error object do not throw", () => {
+  test("error with Error object do not throw", () => {
     const err = new Error("test error");
     assert.doesNotThrow(() => Logger.error("error with context", err));
-    assert.doesNotThrow(() => Logger.critical("critical with context", err));
   });
 
   test("log with context object does not throw", () => {
@@ -51,16 +49,6 @@ suite("Logger", () => {
       assert.doesNotThrow(() => {
         Logger.debug("should appear");
         Logger.info("should appear");
-      });
-    });
-
-    test("respects critical log level", async () => {
-      await vscode.workspace
-        .getConfiguration("customLanguageConfig")
-        .update("logLevel", "critical", vscode.ConfigurationTarget.Workspace);
-      assert.doesNotThrow(() => {
-        Logger.debug("should be filtered");
-        Logger.critical("should appear");
       });
     });
   });

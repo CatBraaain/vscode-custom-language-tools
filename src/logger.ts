@@ -6,7 +6,6 @@ export enum LogLevel {
   INFO = 1,
   WARN = 2,
   ERROR = 3,
-  CRITICAL = 4,
 }
 
 export class Logger {
@@ -35,7 +34,6 @@ export class Logger {
       info: LogLevel.INFO,
       warn: LogLevel.WARN,
       error: LogLevel.ERROR,
-      critical: LogLevel.CRITICAL,
     };
     return levelMap[levelStr.toLowerCase()] || LogLevel.INFO;
   }
@@ -52,34 +50,33 @@ export class Logger {
 
   static debug(message: string, context?: any): void {
     if (Logger.instance.shouldLog(LogLevel.DEBUG)) {
-      Logger.instance.outputChannel.appendLine(Logger.instance.formatMessage("DEBUG", message, context));
+      Logger.instance.outputChannel.appendLine(
+        Logger.instance.formatMessage("DEBUG", message, context),
+      );
     }
   }
 
   static info(message: string, context?: any): void {
     if (Logger.instance.shouldLog(LogLevel.INFO)) {
-      Logger.instance.outputChannel.appendLine(Logger.instance.formatMessage("INFO", message, context));
+      Logger.instance.outputChannel.appendLine(
+        Logger.instance.formatMessage("INFO", message, context),
+      );
     }
   }
 
   static warn(message: string, context?: any): void {
     if (Logger.instance.shouldLog(LogLevel.WARN)) {
-      Logger.instance.outputChannel.appendLine(Logger.instance.formatMessage("WARN", message, context));
+      Logger.instance.outputChannel.appendLine(
+        Logger.instance.formatMessage("WARN", message, context),
+      );
     }
   }
 
   static error(message: string, context?: any): void {
     if (Logger.instance.shouldLog(LogLevel.ERROR)) {
-      Logger.instance.outputChannel.appendLine(Logger.instance.formatMessage("ERROR", message, context));
-      if (context instanceof Error) {
-        Logger.instance.outputChannel.appendLine(`  Stack: ${context.stack}`);
-      }
-    }
-  }
-
-  static critical(message: string, context?: any): void {
-    if (Logger.instance.shouldLog(LogLevel.CRITICAL)) {
-      Logger.instance.outputChannel.appendLine(Logger.instance.formatMessage("CRITICAL", message, context));
+      Logger.instance.outputChannel.appendLine(
+        Logger.instance.formatMessage("ERROR", message, context),
+      );
       if (context instanceof Error) {
         Logger.instance.outputChannel.appendLine(`  Stack: ${context.stack}`);
       }

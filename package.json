@@ -68,8 +68,7 @@
             "debug",
             "info",
             "warn",
-            "error",
-            "critical"
+            "error"
           ]
         },
         "customLanguageConfig.rules": {
