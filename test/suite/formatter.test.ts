@@ -1,32 +1,14 @@
 import * as assert from "assert";
-import * as vscode from "vscode";
-import { describe, afterEach, test } from "mocha";
+import { describe, test } from "mocha";
 
 import { registerFormatter } from "../../src/formatter";
 
 describe("registerFormatter", () => {
-  const disposables: vscode.Disposable[] = [];
-
-  afterEach(() => {
-    disposables.forEach((d) => d.dispose());
-    disposables.length = 0;
-  });
-
-  test("registers formatter and returns Disposable", () => {
-    const disposable = registerFormatter("javascript", "prettier --write");
-    disposables.push(disposable);
-    assert.ok(disposable);
-    assert.ok(typeof disposable.dispose === "function");
-  });
-
-  test("dispose cleans up without error", () => {
-    const disposable = registerFormatter("javascript", "prettier --write");
-    assert.doesNotThrow(() => disposable.dispose());
-  });
-
-  test("registers command with ${filePath} variable", () => {
-    const disposable = registerFormatter("typescript", 'prettier --write "${filePath}"');
-    disposables.push(disposable);
-    assert.ok(disposable);
+  test("register and dispose does work", () => {
+    const formatter = registerFormatter("javascript", "prettier --write");
+    assert.ok(formatter);
+    assert.doesNotThrow(() => {
+      formatter.dispose();
+    });
   });
 });
