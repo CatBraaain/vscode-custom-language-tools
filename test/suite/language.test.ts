@@ -1,13 +1,13 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
-import { suite, teardown, test } from "mocha";
+import { describe, afterEach, test } from "mocha";
 
 import { registerLangConfig } from "../../src/language";
 
-suite("registerLangConfig", () => {
+describe("registerLangConfig", () => {
   const disposables: vscode.Disposable[] = [];
 
-  teardown(() => {
+  afterEach(() => {
     disposables.forEach((d) => d.dispose());
     disposables.length = 0;
   });

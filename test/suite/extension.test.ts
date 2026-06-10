@@ -1,8 +1,8 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
-import { suite, test } from "mocha";
+import { describe, test } from "mocha";
 
-suite("Extension Integration", () => {
+describe("Extension Integration", () => {
   test("extension is active", () => {
     const ext = vscode.extensions.getExtension("CatBraaain.custom-language-config");
     assert.ok(ext, "Extension should be found");

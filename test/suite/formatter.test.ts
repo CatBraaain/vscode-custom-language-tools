@@ -1,13 +1,13 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
-import { suite, teardown, test } from "mocha";
+import { describe, afterEach, test } from "mocha";
 
 import { registerFormatter } from "../../src/formatter";
 
-suite("registerFormatter", () => {
+describe("registerFormatter", () => {
   const disposables: vscode.Disposable[] = [];
 
-  teardown(() => {
+  afterEach(() => {
     disposables.forEach((d) => d.dispose());
     disposables.length = 0;
   });

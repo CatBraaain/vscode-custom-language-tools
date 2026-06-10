@@ -1,13 +1,13 @@
 import * as assert from "assert";
 import * as vscode from "vscode";
-import { suite, teardown, test } from "mocha";
+import { describe, afterEach, test } from "mocha";
 
 import { getConfig, getMatchedRules } from "../../src/config";
 
-suite("getConfig", () => {
+describe("getConfig", () => {
   const cfg = () => vscode.workspace.getConfiguration("customLanguageConfig");
 
-  teardown(async () => {
+  afterEach(async () => {
     await cfg().update("rules", undefined, vscode.ConfigurationTarget.Workspace);
   });
 
@@ -51,10 +51,10 @@ suite("getConfig", () => {
   });
 });
 
-suite("getMatchedRules", () => {
+describe("getMatchedRules", () => {
   const cfg = () => vscode.workspace.getConfiguration("customLanguageConfig");
 
-  teardown(async () => {
+  afterEach(async () => {
     await cfg().update("rules", undefined, vscode.ConfigurationTarget.Workspace);
   });
 
