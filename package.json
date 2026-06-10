@@ -36,7 +36,8 @@
   },
   "dependencies": {
     "string-argv": "^0.3.2",
-    "vscode-languageclient": "^9.0.1"
+    "vscode-languageclient": "^9.0.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
