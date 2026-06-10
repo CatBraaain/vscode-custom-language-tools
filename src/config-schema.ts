@@ -49,13 +49,7 @@ export const RuleSchema = z.object({
   }),
 });
 
-export const LogLevelSchema = z
-  .enum(["debug", "info", "warn", "error"])
-  .default("info")
-  .describe("Log level for extension output");
-
 export const ConfigSchema = z.object({
-  "customLanguageConfig.logLevel": LogLevelSchema,
   "customLanguageConfig.rules": z
     .array(RuleSchema)
     .default([])
@@ -63,7 +57,6 @@ export const ConfigSchema = z.object({
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
-export type LogLevel = z.infer<typeof LogLevelSchema>;
 export type Rule = z.infer<typeof RuleSchema>;
 export type LangConfig = z.infer<typeof LangConfigSchema>;
 export type Required = z.infer<typeof Required>;

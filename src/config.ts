@@ -1,9 +1,8 @@
 import * as vscode from "vscode";
-import { RuleSchema, LogLevel, LogLevelSchema, Rule, Required } from "./config-schema";
+import { RuleSchema, Rule, Required } from "./config-schema";
 import { z } from "zod";
 
 export interface Config {
-  logLevel: LogLevel;
   rules: Rule[];
 }
 
@@ -11,7 +10,6 @@ export function getConfig(): Config {
   const config = vscode.workspace.getConfiguration("customLanguageConfig");
 
   return {
-    logLevel: LogLevelSchema.parse(config.get("logLevel")),
     rules: z.array(RuleSchema).parse(config.get("rules") ?? []),
   };
 }

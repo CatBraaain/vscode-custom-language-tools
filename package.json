@@ -60,17 +60,6 @@
     "configuration": {
       "title": "Unified Language Config",
       "properties": {
-        "customLanguageConfig.logLevel": {
-          "default": "info",
-          "description": "Log level for extension output",
-          "type": "string",
-          "enum": [
-            "debug",
-            "info",
-            "warn",
-            "error"
-          ]
-        },
         "customLanguageConfig.rules": {
           "default": [],
           "description": "Rule-based configuration",
