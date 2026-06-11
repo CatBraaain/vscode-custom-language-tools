@@ -1,4 +1,5 @@
-import * as assert from "assert";
+import * as assert from "node:assert";
+
 import { describe, test } from "mocha";
 
 import { Logger } from "../../src/logger";

@@ -1,6 +1,7 @@
-import * as assert from "assert";
-import * as vscode from "vscode";
+import * as assert from "node:assert";
+
 import { describe, afterEach, test } from "mocha";
+import * as vscode from "vscode";
 
 import { getConfig } from "../../src/config";
 

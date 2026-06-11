@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
-import { RuleSchema, Rule, Required } from "./config-schema";
 import { z } from "zod";
+
+import { RuleSchema, Rule, Required } from "./config-schema";
 
 export interface Config {
   rules: Rule[];

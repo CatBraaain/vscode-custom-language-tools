@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync } from "node:fs";
+
 import { ConfigSchema } from "../src/config-schema";
 
 const packageJsonConfiguration = {
