@@ -1,96 +1,121 @@
 # Custom Language Config
 
-統合カスタム言語設定拡張機能 - フォーマッター、言語プロパティ、LSP設定を一つの拡張機能で管理します。
+A unified VSCode extension for configuring custom language settings, formatters, and Language Server Protocol (LSP) servers through a single rule-based configuration system.
 
-## 機能
+## Features
 
-### 1. Custom Formatter
+### Custom Formatters
 
-- 任意の言語に対してカスタムフォーマッターを登録
-- プラットフォーム別コマンド対応（Windows/macOS/Linux）
-- 条件付きフォーマット:
-  - 設定ファイルの有無判定
-  - ファイル内の特定文字列パターン（正規表現）による判定
-- ドキュメント全体および範囲フォーマットをサポート
+- Register custom formatters for any language
+- Conditional formatting based on:
+  - Configuration file presence
+  - Specific string patterns in files
+- Full document and range formatting support
 
-### 2. Custom Language Properties
+### Custom Language Properties
 
-- 言語構成の動的設定（コメント、ブラケット、自動閉じ括弧）
-- 既存言語拡張の設定ファイル解析
-- settings.json編集時の自動補完
+- Dynamic language configuration:
+  - Comment definitions (line and block)
+  - Bracket pairs
+  - Auto-closing character pairs
+- Integration with existing language extension settings
+- Auto-completion when editing settings.json
 
-### 3. Custom LSP Config
+### Custom LSP Config
 
-- 複数言語サーバー管理
-- Language Client統合
-- LSP遅延起動（ファイルオープン時）
-- LSPプロジェクト単位起動（マルチルートワークスペース対応）
+- Multiple language server management
 
-## インストール
+## Configuration
 
-VS Code Marketplaceからインストールするか、`.vsix`ファイルを手動でインストールします。
+The extension uses a rule-based configuration system. Add rules to your settings.json:
 
-## 設定
+### Example
 
-### Formatter設定
+Each rule defines conditions (`when`) and actions (`use`):
 
 ```json
 {
-  "customLanguageConfig.formatters": [
+  "customLanguageConfig.rules": [
     {
-      "command": "npx prettier --stdin",
-      "languages": ["javascript", "typescript"],
-      "requiresConfigFile": ".prettierrc",
-      "containsPattern": "@format"
+      "when": {
+        "langs": ["javascript", "typescript"],
+        "required": {
+          "file": "package.json",
+          "contains": "prettier"
+        }
+      },
+      "use": {
+        "formatter": ["npx prettier --stdin-filepath ${filePath}"]
+      }
+    },
+    {
+      "when": {
+        "langs": ["javascript", "typescript"],
+        "required": {
+          "file": "package.json",
+          "contains": "eslint"
+        }
+      },
+      "use": {
+        "lsp": ["npx vscode-eslint-language-server --stdio"]
+      }
+    },
+    {
+      "when": {
+        "langs": ["javascript", "typescript"],
+        "required": {
+          "file": "package.json",
+          "contains": "biome@biomejs/biome"
+        }
+      },
+      "use": {
+        // "formatter": ["npx biome@biomejs/biome --stdin-file-path=${filePath}"],
+        "lsp": ["npx biome lsp-proxy"]
+      }
+    },
+    {
+      "when": {
+        "langs": ["javascript", "typescript"],
+        "required": {
+          "file": "package.json",
+          "contains": "vite-plus",
+          "notContains": "prettier|biome"
+        }
+      },
+      "use": {
+        "formatter": ["npx oxfmt --fix"],
+        "lsp": ["npx oxlint --lsp"]
+      }
     }
   ]
 }
 ```
 
-### Language Properties設定
+### Configuration Options
 
-```json
-{
-  "customLanguageConfig.languageProperties": {
-    "javascript": {
-      "comments": {
-        "lineComment": "#",
-        "blockComment": ["/*", "*/"]
-      },
-      "autoClosingPairs": [{ "open": "{", "close": "}" }]
-    }
-  }
-}
-```
+#### `when` - Conditions
 
-### LSP設定
+- `langs` (required): Array of target language IDs
+- `required` (optional): Conditions for rule activation
+  - `file` (required): Regex pattern for required file (e.g., `package\\.json`)
+  - `contains` (optional): Regex pattern that must be contained in the file
+  - `notContains` (optional): Regex pattern that must NOT be contained in the file
 
-```json
-{
-  "customLanguageConfig.lsp": {
-    "servers": [
-      {
-        "language": "typescript",
-        "command": "node",
-        "args": ["./node_modules/typescript-language-server/lib/cli.js", "--stdio"]
-      }
-    ]
-  }
-}
-```
+#### `use` - Actions
 
-## 移行ガイド
+- `formatter` (optional): Array of formatter command strings
+- `lsp` (optional): Array of LSP server command strings
+- `langConfig` (optional): Language-specific configuration
+  - `comments`: Comment configuration
+    - `lineComment`: Line comment token
+    - `blockComment`: `[start, end]` block comment delimiters
+  - `brackets`: Array of `[open, close]` bracket pairs
+  - `autoClosingPairs`: Array of `{open, close}` auto-closing pairs
 
-既存の拡張機能（custom-formatter、custom-language-properties、custom-lsp-config）から移行する場合は、[MIGRATION.md](docs/MIGRATION.md)を参照してください。
+## Commands
 
-## 既知の問題
+### Restart All Language Services
 
-- なし
+**Command ID**: `customLanguageConfig.restartAll`
 
-## 貢献
-
-貢献を歓迎します。プルリクエストを送信してください。
-
-## ライセンス
-
-MIT License - [LICENSE](LICENSE)を参照してください。
+Restarts all language services (formatters, LSP servers, language configurations).
