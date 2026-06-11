@@ -88,6 +88,10 @@
                       "contains": {
                         "description": "Pattern that must be contained in the file (regex)",
                         "type": "string"
+                      },
+                      "notContains": {
+                        "description": "Pattern that must NOT be contained in the file (regex)",
+                        "type": "string"
                       }
                     },
                     "required": [

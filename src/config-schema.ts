@@ -34,6 +34,10 @@ const LangConfigSchema = z.object({
 const Required = z.object({
   file: z.string().describe("Required file regex pattern (e.g. package\\.json, tsconfig\\.json)"),
   contains: z.string().optional().describe("Pattern that must be contained in the file (regex)"),
+  notContains: z
+    .string()
+    .optional()
+    .describe("Pattern that must NOT be contained in the file (regex)"),
 });
 
 export const RuleSchema = z.object({

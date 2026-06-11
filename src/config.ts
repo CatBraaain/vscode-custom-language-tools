@@ -39,7 +39,7 @@ async function isRequiredSatisfied(required: Required): Promise<boolean> {
     return false;
   }
 
-  if (required.contains) {
+  if (required.contains || required.notContains) {
     const matchedFileContents = await Promise.all(
       matchedFilePaths.map(async (filePath) => {
         const uri = vscode.Uri.file(filePath);
@@ -48,8 +48,15 @@ async function isRequiredSatisfied(required: Required): Promise<boolean> {
         return content;
       }),
     );
-    const contentPattern = new RegExp(required.contains);
-    return matchedFileContents.some((content) => contentPattern.test(content));
+
+    const satisfiedContains = required.contains
+      ? matchedFileContents.some((content) => content.includes(required.contains!))
+      : true;
+    const satisfiedNotContains = required.notContains
+      ? matchedFileContents.every((content) => !content.includes(required.notContains!))
+      : true;
+
+    return satisfiedContains && satisfiedNotContains;
   } else {
     return true;
   }
