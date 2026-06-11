@@ -14,9 +14,11 @@ export async function activate(context: vscode.ExtensionContext) {
   registrations = await registerCustomLanguageConfig();
 
   context.subscriptions.push(
-    vscode.workspace.onDidChangeConfiguration(async () => {
-      registrations.forEach((e) => e.dispose());
-      registrations = await registerCustomLanguageConfig();
+    vscode.workspace.onDidChangeConfiguration(async (event) => {
+      if (event.affectsConfiguration("customLanguageConfig.rules")) {
+        registrations.forEach((e) => e.dispose());
+        registrations = await registerCustomLanguageConfig();
+      }
     }),
     vscode.commands.registerCommand("customLanguageConfig.restartAll", async () => {
       registrations.forEach((e) => e.dispose());
