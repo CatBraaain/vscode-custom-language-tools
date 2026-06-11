@@ -33,8 +33,5 @@ export default defineConfig({
         },
       ],
     },
-    env: {
-      builtin: true,
-    },
   },
 });
