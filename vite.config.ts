@@ -2,12 +2,15 @@ import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   pack: {
+    outDir: "dist/prod",
+    sourcemap: true,
     dts: {
       sourcemap: true,
     },
     deps: {
-      skipNodeModulesBundle: true,
-      neverBundle: ["vscode"],
+      neverBundle: ["vscode", "mocha"],
+      alwaysBundle: [/.*/],
+      onlyBundle: false,
     },
     fixedExtension: false,
   },

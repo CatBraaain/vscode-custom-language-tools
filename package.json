@@ -27,12 +27,10 @@
   "type": "module",
   "main": "./dist/prod/index.js",
   "scripts": {
-    "build": "vp pack -d dist/prod",
-    "build:test": "vp pack test/suite/*.test.ts -f cjs -d dist/test --sourcemap",
-    "package": "vsce package",
-    "pretest": "bun run build && bun run build:test",
-    "test": "vscode-test",
-    "vscode:prepublish": "bun run build"
+    "build": "vp pack",
+    "build:test": "vp pack test/suite/*.test.ts -f cjs -d dist/test",
+    "package": "bun run build && vsce package",
+    "test": "bun run build && bun run build:test && vscode-test"
   },
   "dependencies": {
     "string-argv": "^0.3.2",
