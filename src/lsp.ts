@@ -14,8 +14,6 @@ import { Logger } from "./logger";
 export async function registerLsp(langs: string[], command: string): Promise<vscode.Disposable> {
   const [cmd, ...args] = parseArgsStringToArgv(command);
 
-  Logger.info(`Registering LSP for [${langs.join(", ")}]: ${command}`);
-
   const client = new LanguageClient(
     `Custom LSP: ${command}`,
     {
@@ -50,9 +48,13 @@ export async function registerLsp(langs: string[], command: string): Promise<vsc
     } satisfies LanguageClientOptions,
   );
 
+  Logger.info(`LSP registering\n${JSON.stringify({langs,command})}`);
   await client.start();
+  Logger.info(`LSP registered\n${JSON.stringify({langs,command})}`);
 
   return new vscode.Disposable(async () => {
+    Logger.info(`LSP unregistering\n${JSON.stringify({langs,command})}`);
     await client.stop();
+    Logger.info(`LSP unregistered\n${JSON.stringify({langs,command})}`);
   });
 }

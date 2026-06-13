@@ -8,12 +8,16 @@ import { Logger } from "./logger";
 export function registerFormatter(langs: string[], command: string): vscode.Disposable {
   const [cmd, ...args] = parseArgsStringToArgv(command);
 
+  Logger.info(`Formatter registering\n${JSON.stringify({langs,command})}`);
   const fullDisposable = registerFullFormatter(langs, cmd, args);
   const rangeDisposable = registerRangeFormatter(langs, cmd, args);
+  Logger.info(`Formatter registered\n${JSON.stringify({langs,command})}`);
 
   return new vscode.Disposable(() => {
+    Logger.info(`Formatter unregistering\n${JSON.stringify({langs,command})}`);
     fullDisposable.dispose();
     rangeDisposable.dispose();
+    Logger.info(`Formatter unregistered\n${JSON.stringify({langs,command})}`);
   });
 }
 
