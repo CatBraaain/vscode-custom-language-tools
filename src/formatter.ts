@@ -5,11 +5,11 @@ import * as vscode from "vscode";
 
 import { Logger } from "./logger";
 
-export function registerFormatter(lang: string, command: string): vscode.Disposable {
+export function registerFormatter(langs: string[], command: string): vscode.Disposable {
   const [cmd, ...args] = parseArgsStringToArgv(command);
 
-  const fullDisposable = registerFullFormatter(lang, cmd, args);
-  const rangeDisposable = registerRangeFormatter(lang, cmd, args);
+  const fullDisposable = registerFullFormatter(langs, cmd, args);
+  const rangeDisposable = registerRangeFormatter(langs, cmd, args);
 
   return new vscode.Disposable(() => {
     fullDisposable.dispose();
@@ -17,8 +17,8 @@ export function registerFormatter(lang: string, command: string): vscode.Disposa
   });
 }
 
-function registerFullFormatter(lang: string, cmd: string, args: string[]): vscode.Disposable {
-  return vscode.languages.registerDocumentFormattingEditProvider(lang, {
+function registerFullFormatter(langs: string[], cmd: string, args: string[]): vscode.Disposable {
+  return vscode.languages.registerDocumentFormattingEditProvider(langs, {
     provideDocumentFormattingEdits(
       document: vscode.TextDocument,
       _options: vscode.FormattingOptions,
@@ -29,8 +29,8 @@ function registerFullFormatter(lang: string, cmd: string, args: string[]): vscod
   } satisfies vscode.DocumentFormattingEditProvider);
 }
 
-function registerRangeFormatter(lang: string, cmd: string, args: string[]): vscode.Disposable {
-  return vscode.languages.registerDocumentRangeFormattingEditProvider(lang, {
+function registerRangeFormatter(langs: string[], cmd: string, args: string[]): vscode.Disposable {
+  return vscode.languages.registerDocumentRangeFormattingEditProvider(langs, {
     provideDocumentRangeFormattingEdits(
       document: vscode.TextDocument,
       range: vscode.Range,

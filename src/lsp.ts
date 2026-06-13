@@ -11,10 +11,10 @@ import {
 
 import { Logger } from "./logger";
 
-export async function registerLsp(lang: string, command: string): Promise<vscode.Disposable> {
+export async function registerLsp(langs: string[], command: string): Promise<vscode.Disposable> {
   const [cmd, ...args] = parseArgsStringToArgv(command);
 
-  Logger.info(`Registering LSP for ${lang}: ${command}`);
+  Logger.info(`Registering LSP for [${langs.join(", ")}]: ${command}`);
 
   const client = new LanguageClient(
     `Custom LSP: ${command}`,
@@ -31,7 +31,7 @@ export async function registerLsp(lang: string, command: string): Promise<vscode
       },
     } satisfies ServerOptions,
     {
-      documentSelector: [{ scheme: "file", language: lang }],
+      documentSelector: langs,
       errorHandler: {
         error(_error, _message, count) {
           if (count && count <= 3) {

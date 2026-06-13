@@ -3,8 +3,13 @@ import * as vscode from "vscode";
 import { LangConfig } from "./config-schema";
 
 export async function registerLangConfig(
-  langId: string,
+  langs: string[],
   langConfig: LangConfig,
 ): Promise<vscode.Disposable> {
-  return vscode.languages.setLanguageConfiguration(langId, langConfig);
+  const disposables = langs.map((lang) =>
+    vscode.languages.setLanguageConfiguration(lang, langConfig),
+  );
+  return new vscode.Disposable(() => {
+    disposables.forEach((d) => d.dispose());
+  });
 }

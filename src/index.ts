@@ -35,20 +35,19 @@ export async function activate(context: vscode.ExtensionContext) {
 async function registerCustomLanguageConfig(): Promise<vscode.Disposable[]> {
   const disposables: vscode.Disposable[] = [];
   for (const rule of await getMatchedRules()) {
-    for (const lang of rule.when.langs ?? []) {
-      if (rule.use.lsp) {
-        rule.use.lsp.forEach(async (e) => {
-          disposables.push(await registerLsp(lang, e));
-        });
-      }
-      if (rule.use.formatter) {
-        rule.use.formatter.forEach((e) => {
-          disposables.push(registerFormatter(lang, e));
-        });
-      }
-      if (rule.use.langConfig) {
-        disposables.push(await registerLangConfig(lang, rule.use.langConfig));
-      }
+    const langs = rule.when.langs ?? [];
+    if (rule.use.lsp) {
+      rule.use.lsp.forEach(async (e) => {
+        disposables.push(await registerLsp(langs, e));
+      });
+    }
+    if (rule.use.formatter) {
+      rule.use.formatter.forEach((e) => {
+        disposables.push(registerFormatter(langs, e));
+      });
+    }
+    if (rule.use.langConfig) {
+      disposables.push(await registerLangConfig(langs, rule.use.langConfig));
     }
   }
   return disposables;
