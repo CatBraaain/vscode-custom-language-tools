@@ -4,6 +4,7 @@ import {
   LanguageClient,
   LanguageClientOptions,
   Executable,
+  State,
   ErrorAction,
   CloseAction,
 } from "vscode-languageclient/node";
@@ -12,6 +13,9 @@ import { Logger } from "./logger";
 
 export async function registerLsp(langs: string[], command: string): Promise<vscode.Disposable> {
   const [cmd, ...args] = parseArgsStringToArgv(command);
+
+  let restartCount = 0;
+  const MAX_RESTART = 3;
 
   const client = new LanguageClient(
     `Custom LSP: ${command}`,
@@ -22,22 +26,31 @@ export async function registerLsp(langs: string[], command: string): Promise<vsc
     {
       documentSelector: langs,
       errorHandler: {
-        error(_error, _message, count) {
-          if (count && count <= 3) {
-            return { action: ErrorAction.Continue };
-          } else {
-            return { action: ErrorAction.Shutdown };
-          }
+        error(error, _message, _count) {
+          return { action: ErrorAction.Continue, message: `${command}: ${JSON.stringify(error)}` };
         },
         closed() {
-          return {
-            action: CloseAction.Restart,
-            message: "Language server closed unexpectedly. Restarting.",
-          };
+          restartCount++;
+
+          if (restartCount <= MAX_RESTART) {
+            return {
+              action: CloseAction.Restart,
+            };
+          } else {
+            return {
+              action: CloseAction.DoNotRestart,
+              message: `${command}: server closed unexpectedly after ${restartCount} retries`,
+            };
+          }
         },
       },
     } satisfies LanguageClientOptions,
   );
+  client.onDidChangeState((e) => {
+    if (e.newState === State.Running) {
+      restartCount = 0;
+    }
+  });
 
   Logger.info(`LSP registering\n${JSON.stringify({langs,command})}`);
   await client.start();
