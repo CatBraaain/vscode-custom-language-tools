@@ -52,13 +52,13 @@ export async function registerLsp(langs: string[], command: string): Promise<vsc
     }
   });
 
-  Logger.info(`LSP registering\n${JSON.stringify({langs,command})}`);
+  Logger.info(`LSP registering\n${JSON.stringify({ langs, command })}`);
   await client.start();
-  Logger.info(`LSP registered\n${JSON.stringify({langs,command})}`);
+  Logger.info(`LSP registered\n${JSON.stringify({ langs, command })}`);
 
   return new vscode.Disposable(async () => {
-    Logger.info(`LSP unregistering\n${JSON.stringify({langs,command})}`);
+    Logger.info(`LSP unregistering\n${JSON.stringify({ langs, command })}`);
     await client.stop();
-    Logger.info(`LSP unregistered\n${JSON.stringify({langs,command})}`);
+    Logger.info(`LSP unregistered\n${JSON.stringify({ langs, command })}`);
   });
 }
