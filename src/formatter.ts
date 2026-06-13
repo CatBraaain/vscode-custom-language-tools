@@ -3,26 +3,34 @@ import { execFile } from "node:child_process";
 import { parseArgsStringToArgv } from "string-argv";
 import * as vscode from "vscode";
 
+import { DocumentSelector } from "./config-schema";
 import { Logger } from "./logger";
 
-export function registerFormatter(langs: string[], command: string): vscode.Disposable {
+export function registerFormatter(
+  documentSelector: DocumentSelector,
+  command: string,
+): vscode.Disposable {
   const [cmd, ...args] = parseArgsStringToArgv(command);
 
-  Logger.info(`Formatter registering\n${JSON.stringify({ langs, command })}`);
-  const fullDisposable = registerFullFormatter(langs, cmd, args);
-  const rangeDisposable = registerRangeFormatter(langs, cmd, args);
-  Logger.info(`Formatter registered\n${JSON.stringify({ langs, command })}`);
+  Logger.info(`Formatter registering\n${JSON.stringify({ documentSelector, command })}`);
+  const fullDisposable = registerFullFormatter(documentSelector, cmd, args);
+  const rangeDisposable = registerRangeFormatter(documentSelector, cmd, args);
+  Logger.info(`Formatter registered\n${JSON.stringify({ documentSelector, command })}`);
 
   return new vscode.Disposable(() => {
-    Logger.info(`Formatter unregistering\n${JSON.stringify({ langs, command })}`);
+    Logger.info(`Formatter unregistering\n${JSON.stringify({ documentSelector, command })}`);
     fullDisposable.dispose();
     rangeDisposable.dispose();
-    Logger.info(`Formatter unregistered\n${JSON.stringify({ langs, command })}`);
+    Logger.info(`Formatter unregistered\n${JSON.stringify({ documentSelector, command })}`);
   });
 }
 
-function registerFullFormatter(langs: string[], cmd: string, args: string[]): vscode.Disposable {
-  return vscode.languages.registerDocumentFormattingEditProvider(langs, {
+function registerFullFormatter(
+  documentSelector: DocumentSelector,
+  cmd: string,
+  args: string[],
+): vscode.Disposable {
+  return vscode.languages.registerDocumentFormattingEditProvider(documentSelector, {
     provideDocumentFormattingEdits(
       document: vscode.TextDocument,
       _options: vscode.FormattingOptions,
@@ -33,8 +41,12 @@ function registerFullFormatter(langs: string[], cmd: string, args: string[]): vs
   } satisfies vscode.DocumentFormattingEditProvider);
 }
 
-function registerRangeFormatter(langs: string[], cmd: string, args: string[]): vscode.Disposable {
-  return vscode.languages.registerDocumentRangeFormattingEditProvider(langs, {
+function registerRangeFormatter(
+  documentSelector: DocumentSelector,
+  cmd: string,
+  args: string[],
+): vscode.Disposable {
+  return vscode.languages.registerDocumentRangeFormattingEditProvider(documentSelector, {
     provideDocumentRangeFormattingEdits(
       document: vscode.TextDocument,
       range: vscode.Range,

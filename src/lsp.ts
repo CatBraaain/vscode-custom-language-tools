@@ -9,9 +9,13 @@ import {
   CloseAction,
 } from "vscode-languageclient/node";
 
+import { DocumentSelector } from "./config-schema";
 import { Logger } from "./logger";
 
-export async function registerLsp(langs: string[], command: string): Promise<vscode.Disposable> {
+export async function registerLsp(
+  documentSelector: DocumentSelector,
+  command: string,
+): Promise<vscode.Disposable> {
   const [cmd, ...args] = parseArgsStringToArgv(command);
 
   let restartCount = 0;
@@ -24,7 +28,7 @@ export async function registerLsp(langs: string[], command: string): Promise<vsc
       args,
     } satisfies Executable,
     {
-      documentSelector: langs,
+      documentSelector: documentSelector as any,
       errorHandler: {
         error(error, _message, _count) {
           return { action: ErrorAction.Continue, message: `${command}: ${JSON.stringify(error)}` };
@@ -52,13 +56,13 @@ export async function registerLsp(langs: string[], command: string): Promise<vsc
     }
   });
 
-  Logger.info(`LSP registering\n${JSON.stringify({ langs, command })}`);
+  Logger.info(`LSP registering\n${JSON.stringify({ documentSelector, command })}`);
   await client.start();
-  Logger.info(`LSP registered\n${JSON.stringify({ langs, command })}`);
+  Logger.info(`LSP registered\n${JSON.stringify({ documentSelector, command })}`);
 
   return new vscode.Disposable(async () => {
-    Logger.info(`LSP unregistering\n${JSON.stringify({ langs, command })}`);
+    Logger.info(`LSP unregistering\n${JSON.stringify({ documentSelector, command })}`);
     await client.stop();
-    Logger.info(`LSP unregistered\n${JSON.stringify({ langs, command })}`);
+    Logger.info(`LSP unregistered\n${JSON.stringify({ documentSelector, command })}`);
   });
 }

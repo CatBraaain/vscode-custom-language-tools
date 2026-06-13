@@ -65,47 +65,88 @@
           "items": {
             "type": "object",
             "properties": {
-              "when": {
+              "condition": {
                 "type": "object",
                 "properties": {
-                  "langs": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    },
-                    "description": "Target language IDs"
-                  },
-                  "required": {
-                    "description": "Required file and content matching conditions",
-                    "type": "object",
-                    "properties": {
-                      "file": {
-                        "type": "string",
-                        "description": "Required file regex pattern (e.g. package\\.json, tsconfig\\.json)"
+                  "documentSelector": {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "language": {
+                                "type": "string"
+                              },
+                              "notebookType": {
+                                "type": "string"
+                              },
+                              "pattern": {
+                                "type": "string"
+                              },
+                              "scheme": {
+                                "type": "string"
+                              }
+                            },
+                            "description": "DocumentFilter"
+                          },
+                          {
+                            "type": "string",
+                            "description": "Language ID (e.g., 'javascript', 'typescript')"
+                          }
+                        ]
                       },
-                      "contains": {
-                        "description": "Pattern that must be contained in the file (regex)",
-                        "type": "string"
-                      },
-                      "notContains": {
-                        "description": "Pattern that must NOT be contained in the file (regex)",
-                        "type": "string"
+                      {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "language": {
+                                  "type": "string"
+                                },
+                                "notebookType": {
+                                  "type": "string"
+                                },
+                                "pattern": {
+                                  "type": "string"
+                                },
+                                "scheme": {
+                                  "type": "string"
+                                }
+                              },
+                              "description": "DocumentFilter"
+                            },
+                            {
+                              "type": "string",
+                              "description": "Language ID (e.g., 'javascript', 'typescript')"
+                            }
+                          ]
+                        }
                       }
-                    },
-                    "required": [
-                      "file"
-                    ]
+                    ],
+                    "description": "Array of DocumentFilter or LanguageID for target files.\n(.e.g, ['javascript', 'typescript', { language: 'json', pattern: '**/package.json' }])\nsee details in https://code.visualstudio.com/api/references/vscode-api#DocumentFilter"
+                  },
+                  "when": {
+                    "description": "Command executed to determine whether this rule is active (true if exit code is 0)",
+                    "type": "string"
+                  },
+                  "whenNot": {
+                    "description": "Command executed to determine whether this rule is active (true if exit code is 1)",
+                    "type": "string"
                   }
                 },
                 "required": [
-                  "langs"
-                ]
+                  "documentSelector"
+                ],
+                "description": "Conditions for applying this rule"
               },
-              "use": {
+              "action": {
                 "type": "object",
                 "properties": {
-                  "lsp": {
-                    "description": "Array of lsp commands",
+                  "server": {
+                    "description": "Array of LSP server commands",
                     "type": "array",
                     "items": {
                       "type": "string"
@@ -118,8 +159,8 @@
                       "type": "string"
                     }
                   },
-                  "langConfig": {
-                    "description": "Language properties configuration",
+                  "config": {
+                    "description": "Language configuration",
                     "type": "object",
                     "properties": {
                       "comments": {
@@ -186,12 +227,13 @@
                       }
                     }
                   }
-                }
+                },
+                "description": "Actions to apply when conditions are met"
               }
             },
             "required": [
-              "when",
-              "use"
+              "condition",
+              "action"
             ]
           }
         }

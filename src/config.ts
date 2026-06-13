@@ -1,7 +1,9 @@
+import { parseArgsStringToArgv } from "string-argv";
 import * as vscode from "vscode";
 import { z } from "zod";
+import { spawn } from "node:child_process";
 
-import { RuleSchema, Rule, Required } from "./config-schema";
+import { RuleSchema, Rule } from "./config-schema";
 
 export interface Config {
   rules: Rule[];
@@ -20,44 +22,43 @@ export function getConfig(): Config {
 
 export async function getMatchedRules(): Promise<Rule[]> {
   const { rules } = getConfig();
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+
+  if (!workspaceFolders || workspaceFolders.length === 0) {
+    return rules.filter((rule) => !rule.condition.when);
+  }
+
+  const workspacePaths = workspaceFolders.map((w) => w.uri.fsPath);
   const resolvedRules = await Promise.all(
-    rules.map(async (rule) => ({
-      rule,
-      matched: rule.when.required === undefined || (await isRequiredSatisfied(rule.when.required)),
-    })),
+    rules.map(async (rule) => {
+      const results = await Promise.all(
+        workspacePaths.map((workspacePath) => isConditionSatisfied(rule, workspacePath)),
+      );
+      return {
+        rule,
+        matched: results.some(Boolean),
+      };
+    }),
   );
+
   return resolvedRules.filter(({ matched }) => matched).map(({ rule }) => rule);
 }
 
-async function isRequiredSatisfied(required: Required): Promise<boolean> {
-  const files = await vscode.workspace.findFiles("**/*");
-  const filePattern = new RegExp(required.file);
-  const matchedFilePaths = files
-    .filter((uri) => filePattern.test(uri.fsPath))
-    .map((uri) => uri.fsPath);
-  if (matchedFilePaths.length === 0) {
-    return false;
-  }
+async function isConditionSatisfied(rule: Rule, workspacePath: string): Promise<boolean> {
+  const { when, whenNot } = rule.condition;
+  const isWhenSatisfied = !when || (await executeCommand(when, workspacePath)) === 0;
+  const isWhenNotSatisfied = !whenNot || (await executeCommand(whenNot, workspacePath)) === 1;
+  return isWhenSatisfied && isWhenNotSatisfied;
+}
 
-  if (required.contains || required.notContains) {
-    const matchedFileContents = await Promise.all(
-      matchedFilePaths.map(async (filePath) => {
-        const uri = vscode.Uri.file(filePath);
-        const bytes = await vscode.workspace.fs.readFile(uri);
-        const content = Buffer.from(bytes).toString("utf8");
-        return content;
-      }),
-    );
-
-    const satisfiedContains = required.contains
-      ? matchedFileContents.some((content) => content.includes(required.contains!))
-      : true;
-    const satisfiedNotContains = required.notContains
-      ? matchedFileContents.every((content) => !content.includes(required.notContains!))
-      : true;
-
-    return satisfiedContains && satisfiedNotContains;
-  } else {
-    return true;
-  }
+async function executeCommand(command: string, workspacePath: string): Promise<number> {
+  const [cmd, ...args] = parseArgsStringToArgv(command);
+  return new Promise<number>((resolve) => {
+    const child = spawn(cmd, args, {
+      cwd: workspacePath,
+      timeout: 5000,
+    });
+    child.on("close", (code) => resolve(code ?? 1));
+    child.on("error", () => resolve(1));
+  });
 }

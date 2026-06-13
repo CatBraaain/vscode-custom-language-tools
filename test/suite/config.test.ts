@@ -23,16 +23,18 @@ describe("getConfig", () => {
       "rules",
       [
         {
-          when: { langs: ["javascript"] },
-          use: { formatter: ["prettier --write"] },
+          condition: { documentSelector: ["javascript"] },
+          action: { formatter: ["prettier --stdin-filepath ${filePath}"] },
         },
       ],
       vscode.ConfigurationTarget.Workspace,
     );
     const config = getConfig();
     assert.strictEqual(config.rules.length, 1);
-    assert.deepStrictEqual(config.rules[0].when.langs, ["javascript"]);
-    assert.deepStrictEqual(config.rules[0].use.formatter, ["prettier --write"]);
+    assert.deepStrictEqual(config.rules[0].condition.documentSelector, ["javascript"]);
+    assert.deepStrictEqual(config.rules[0].action.formatter, [
+      "prettier --stdin-filepath ${filePath}",
+    ]);
   });
 
   test("getConfig returns empty rules on invalid rule schema", async () => {
@@ -40,8 +42,8 @@ describe("getConfig", () => {
       "rules",
       [
         {
-          // Missing required 'when' field
-          use: { formatter: ["prettier"] },
+          // Missing required 'condition' field
+          action: { formatter: ["prettier --stdin-filepath ${filePath}"] },
         } as any,
       ],
       vscode.ConfigurationTarget.Workspace,

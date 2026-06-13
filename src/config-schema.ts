@@ -1,5 +1,20 @@
 import { z } from "zod";
 
+const DocumentFilterSchema = z
+  .object({
+    language: z.string().optional(),
+    notebookType: z.string().optional(),
+    pattern: z.string().optional(),
+    scheme: z.string().optional(),
+  })
+  .describe("DocumentFilter");
+const LanguageIDSchema = z.string().describe("Language ID (e.g., 'javascript', 'typescript')");
+const DocumentFilterOrLanguageIDSchema = z.union([DocumentFilterSchema, LanguageIDSchema]);
+const DocumentSelectorSchema = z.union([
+  DocumentFilterOrLanguageIDSchema,
+  z.array(DocumentFilterOrLanguageIDSchema),
+]);
+
 const LangConfigSchema = z.object({
   comments: z
     .object({
@@ -31,26 +46,37 @@ const LangConfigSchema = z.object({
     .optional(),
 });
 
-const Required = z.object({
-  file: z.string().describe("Required file regex pattern (e.g. package\\.json, tsconfig\\.json)"),
-  contains: z.string().optional().describe("Pattern that must be contained in the file (regex)"),
-  notContains: z
-    .string()
-    .optional()
-    .describe("Pattern that must NOT be contained in the file (regex)"),
-});
-
 export const RuleSchema = z.object({
-  when: z.object({
-    langs: z.array(z.string()).describe("Target language IDs"),
-    required: Required.optional().describe("Required file and content matching conditions"),
-  }),
-
-  use: z.object({
-    lsp: z.array(z.string()).optional().describe("Array of lsp commands"),
-    formatter: z.array(z.string()).optional().describe("Array of formatter commands"),
-    langConfig: LangConfigSchema.optional().describe("Language properties configuration"),
-  }),
+  condition: z
+    .object({
+      documentSelector: DocumentSelectorSchema.describe(
+        [
+          "Array of DocumentFilter or LanguageID for target files.",
+          "(.e.g, ['javascript', 'typescript', { language: 'json', pattern: '**/package.json' }])",
+          "see details in https://code.visualstudio.com/api/references/vscode-api#DocumentFilter",
+        ].join("\n"),
+      ),
+      when: z
+        .string()
+        .optional()
+        .describe(
+          "Command executed to determine whether this rule is active (true if exit code is 0)",
+        ),
+      whenNot: z
+        .string()
+        .optional()
+        .describe(
+          "Command executed to determine whether this rule is active (true if exit code is 1)",
+        ),
+    })
+    .describe("Conditions for applying this rule"),
+  action: z
+    .object({
+      server: z.array(z.string()).optional().describe("Array of LSP server commands"),
+      formatter: z.array(z.string()).optional().describe("Array of formatter commands"),
+      config: LangConfigSchema.optional().describe("Language configuration"),
+    })
+    .describe("Actions to apply when conditions are met"),
 });
 
 export const ConfigSchema = z.object({
@@ -62,5 +88,5 @@ export const ConfigSchema = z.object({
 
 export type Config = z.infer<typeof ConfigSchema>;
 export type Rule = z.infer<typeof RuleSchema>;
+export type DocumentSelector = z.infer<typeof DocumentSelectorSchema>;
 export type LangConfig = z.infer<typeof LangConfigSchema>;
-export type Required = z.infer<typeof Required>;
