@@ -3,8 +3,7 @@ import * as vscode from "vscode";
 import {
   LanguageClient,
   LanguageClientOptions,
-  ServerOptions,
-  TransportKind,
+  Executable,
   ErrorAction,
   CloseAction,
 } from "vscode-languageclient/node";
@@ -17,17 +16,9 @@ export async function registerLsp(langs: string[], command: string): Promise<vsc
   const client = new LanguageClient(
     `Custom LSP: ${command}`,
     {
-      run: {
-        command: cmd,
-        args,
-        transport: TransportKind.stdio,
-      },
-      debug: {
-        command: cmd,
-        args,
-        transport: TransportKind.stdio,
-      },
-    } satisfies ServerOptions,
+      command: cmd,
+      args,
+    } satisfies Executable,
     {
       documentSelector: langs,
       errorHandler: {
