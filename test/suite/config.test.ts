@@ -25,7 +25,7 @@ describe("getConfig", () => {
         {
           name: "Prettier",
           condition: { documentSelector: ["javascript"] },
-          action: { formatter: ["prettier --stdin-filepath ${filePath}"] },
+          action: { formatter: "prettier --stdin-filepath ${filePath}" },
         },
       ],
       vscode.ConfigurationTarget.Workspace,
@@ -33,9 +33,10 @@ describe("getConfig", () => {
     const config = getConfig();
     assert.strictEqual(config.rules.length, 1);
     assert.deepStrictEqual(config.rules[0].condition.documentSelector, ["javascript"]);
-    assert.deepStrictEqual(config.rules[0].action.formatter, [
+    assert.deepStrictEqual(
+      config.rules[0].action.formatter,
       "prettier --stdin-filepath ${filePath}",
-    ]);
+    );
   });
 
   test("getConfig returns empty rules on invalid rule schema", async () => {
@@ -44,8 +45,8 @@ describe("getConfig", () => {
       [
         {
           // Missing required 'name' and 'condition' fields
-          action: { formatter: ["prettier --stdin-filepath ${filePath}"] },
-        } as any,
+          action: { formatter: "prettier --stdin-filepath ${filePath}" },
+        },
       ],
       vscode.ConfigurationTarget.Workspace,
     );
