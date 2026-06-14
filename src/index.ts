@@ -7,7 +7,7 @@ import { Logger } from "./logger";
 import { registerLsp } from "./lsp";
 
 export async function activate(context: vscode.ExtensionContext) {
-  Logger.info("Activating Custom Language Config extension...");
+  Logger.info("Activating Custom Language Tools extension...");
 
   let registrations: vscode.Disposable[] = [];
 
@@ -15,12 +15,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration(async (event) => {
-      if (event.affectsConfiguration("customLanguageConfig.rules")) {
+      if (event.affectsConfiguration("customLanguageTools.rules")) {
         registrations.forEach((e) => e.dispose());
         registrations = await registerCustomLanguageConfig();
       }
     }),
-    vscode.commands.registerCommand("customLanguageConfig.restartAll", async () => {
+    vscode.commands.registerCommand("customLanguageTools.restartAll", async () => {
       registrations.forEach((e) => e.dispose());
       registrations = await registerCustomLanguageConfig();
     }),
@@ -29,7 +29,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
   );
 
-  Logger.info("Custom Language Config extension activated");
+  Logger.info("Custom Language Tools extension activated");
 }
 
 async function registerCustomLanguageConfig(): Promise<vscode.Disposable[]> {

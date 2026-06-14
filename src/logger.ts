@@ -5,7 +5,7 @@ export class Logger {
   private outputChannel: vscode.LogOutputChannel;
 
   private constructor() {
-    this.outputChannel = vscode.window.createOutputChannel("Custom Language Config", { log: true });
+    this.outputChannel = vscode.window.createOutputChannel("Custom Language Tools", { log: true });
   }
 
   static get instance(): Logger {

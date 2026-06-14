@@ -1,6 +1,6 @@
 {
-  "name": "custom-language-config",
-  "displayName": "Custom Language Config",
+  "name": "custom-language-tools",
+  "displayName": "Custom Language Tools",
   "version": "0.0.0",
   "private": true,
   "description": "",
@@ -21,7 +21,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/CatBraaain/custom-language-config"
+    "url": "https://github.com/CatBraaain/custom-language-tools"
   },
   "publisher": "CatBraaain",
   "type": "module",
@@ -50,15 +50,15 @@
   "contributes": {
     "commands": [
       {
-        "command": "customLanguageConfig.restartAll",
+        "command": "customLanguageTools.restartAll",
         "title": "Restart All Language Services",
-        "category": "Custom Language Config"
+        "category": "Custom Language Tools"
       }
     ],
     "configuration": {
-      "title": "Custom Language Config",
+      "title": "Custom Language Tools",
       "properties": {
-        "customLanguageConfig.rules": {
+        "customLanguageTools.rules": {
           "default": [],
           "description": "Rule-based configuration",
           "type": "array",

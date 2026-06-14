@@ -10,7 +10,7 @@ export interface Config {
 }
 
 export function getConfig(): Config {
-  const config = vscode.workspace.getConfiguration("customLanguageConfig");
+  const config = vscode.workspace.getConfiguration("customLanguageTools");
   const result = z.array(RuleSchema).safeParse(config.get("rules") ?? []);
   if (!result.success) {
     vscode.window.showErrorMessage(`Failed to parse configuration: ${result.error.message}`);

@@ -80,7 +80,7 @@ export const RuleSchema = z.object({
 });
 
 export const ConfigSchema = z.object({
-  "customLanguageConfig.rules": z
+  "customLanguageTools.rules": z
     .array(RuleSchema)
     .default([])
     .describe("Rule-based configuration"),

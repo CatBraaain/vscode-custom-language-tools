@@ -6,7 +6,7 @@ import * as vscode from "vscode";
 import { getConfig } from "../../src/config";
 
 describe("getConfig", () => {
-  const cfg = () => vscode.workspace.getConfiguration("customLanguageConfig");
+  const cfg = () => vscode.workspace.getConfiguration("customLanguageTools");
 
   afterEach(async () => {
     await cfg().update("rules", undefined, vscode.ConfigurationTarget.Workspace);

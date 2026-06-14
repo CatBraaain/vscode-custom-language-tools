@@ -1,4 +1,4 @@
-# Custom Language Config
+# Custom Language Tools
 
 A unified VSCode extension for configuring custom language settings, formatters, and Language Server Protocol (LSP) servers through a single rule-based configuration system.
 
@@ -35,7 +35,7 @@ Each rule defines conditions (`when`) and actions (`use`):
 
 ```json
 {
-  "customLanguageConfig.rules": [
+  "customLanguageTools.rules": [
     {
       "when": {
         "langs": ["javascript", "typescript"],
@@ -116,6 +116,6 @@ Each rule defines conditions (`when`) and actions (`use`):
 
 ### Restart All Language Services
 
-**Command ID**: `customLanguageConfig.restartAll`
+**Command ID**: `customLanguageTools.restartAll`
 
 Restarts all language services (formatters, LSP servers, language configurations).

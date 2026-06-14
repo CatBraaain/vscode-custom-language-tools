@@ -5,7 +5,7 @@ import * as vscode from "vscode";
 
 describe("Extension Integration", () => {
   test("extension is active", () => {
-    const ext = vscode.extensions.getExtension("CatBraaain.custom-language-config");
+    const ext = vscode.extensions.getExtension("CatBraaain.custom-language-tools");
     assert.ok(ext, "Extension should be found");
     assert.ok(ext!.isActive === true, "Extension should be active");
   });
@@ -13,7 +13,7 @@ describe("Extension Integration", () => {
   test("extension commands is registered", async () => {
     const registeredCommands = await vscode.commands.getCommands(true);
     assert.ok(
-      registeredCommands.includes("customLanguageConfig.restartAll"),
+      registeredCommands.includes("customLanguageTools.restartAll"),
       "restart command should be registered",
     );
   });
