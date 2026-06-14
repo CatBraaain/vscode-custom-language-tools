@@ -1,10 +1,11 @@
+import { spawn } from "node:child_process";
+
 import { parseArgsStringToArgv } from "string-argv";
 import * as vscode from "vscode";
 import { z } from "zod";
-import { spawn } from "node:child_process";
 
-import { Logger } from "./logger";
 import { RuleSchema, Rule } from "./config-schema";
+import { Logger } from "./logger";
 
 export interface Config {
   rules: Rule[];
@@ -16,9 +17,7 @@ export function getConfig(): Config {
   if (!result.success) {
     vscode.window.showErrorMessage(`Failed to parse configuration: ${result.error.message}`);
   }
-  return {
-    rules: result.data ?? [],
-  };
+  return { rules: result.data ?? [] };
 }
 
 export async function getMatchedRules(): Promise<Rule[]> {

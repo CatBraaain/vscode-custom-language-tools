@@ -49,10 +49,7 @@ export const RuleSchema = z.object({
 });
 
 export const ConfigSchema = z.object({
-  "customLanguageTools.rules": z
-    .array(RuleSchema)
-    .default([])
-    .describe("Rule-based configuration"),
+  "customLanguageTools.rules": z.array(RuleSchema).default([]).describe("Rule-based configuration"),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
