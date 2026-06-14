@@ -15,37 +15,6 @@ const DocumentSelectorSchema = z.union([
   z.array(DocumentFilterOrLanguageIDSchema),
 ]);
 
-const LangConfigSchema = z.object({
-  comments: z
-    .object({
-      lineComment: z.string().describe("Line comment token").optional(),
-      blockComment: z
-        .tuple([
-          z.string().describe("Block comment start token"),
-          z.string().describe("Block comment end token"),
-        ])
-        .describe("Block comment delimiters")
-        .optional(),
-    })
-    .describe("Comment configuration")
-    .optional(),
-  brackets: z
-    .array(
-      z.tuple([z.string().describe("Opening bracket"), z.string().describe("Closing bracket")]),
-    )
-    .describe("Bracket pairs")
-    .optional(),
-  autoClosingPairs: z
-    .array(
-      z.object({
-        open: z.string().describe("Opening character"),
-        close: z.string().describe("Closing character"),
-      }),
-    )
-    .describe("Auto-closing character pairs")
-    .optional(),
-});
-
 export const RuleSchema = z.object({
   condition: z
     .object({
@@ -74,7 +43,6 @@ export const RuleSchema = z.object({
     .object({
       server: z.array(z.string()).optional().describe("Array of LSP server commands"),
       formatter: z.array(z.string()).optional().describe("Array of formatter commands"),
-      config: LangConfigSchema.optional().describe("Language configuration"),
     })
     .describe("Actions to apply when conditions are met"),
 });
@@ -89,4 +57,3 @@ export const ConfigSchema = z.object({
 export type Config = z.infer<typeof ConfigSchema>;
 export type Rule = z.infer<typeof RuleSchema>;
 export type DocumentSelector = z.infer<typeof DocumentSelectorSchema>;
-export type LangConfig = z.infer<typeof LangConfigSchema>;

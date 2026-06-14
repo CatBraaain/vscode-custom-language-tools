@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 
 import { getMatchedRules } from "./config";
 import { registerFormatter } from "./formatter";
-import { registerLangConfig } from "./language";
 import { Logger } from "./logger";
 import { registerLsp } from "./lsp";
 
@@ -45,9 +44,6 @@ async function registerCustomLanguageConfig(): Promise<vscode.Disposable[]> {
       rule.action.formatter.forEach((command) => {
         disposables.push(registerFormatter(documentSelector, command));
       });
-    }
-    if (rule.action.config) {
-      disposables.push(await registerLangConfig(documentSelector, rule.action.config));
     }
   }
   return disposables;
