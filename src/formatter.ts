@@ -9,19 +9,20 @@ import { Logger } from "./logger";
 export function registerFormatter(
   documentSelector: DocumentSelector,
   command: string,
+  ruleName: string,
 ): vscode.Disposable {
   const [cmd, ...args] = parseArgsStringToArgv(command);
 
-  Logger.info(`Formatter registering\n${JSON.stringify({ documentSelector, command })}`);
+  Logger.info(`${ruleName} - Formatter registering`);
   const fullDisposable = registerFullFormatter(documentSelector, cmd, args);
   const rangeDisposable = registerRangeFormatter(documentSelector, cmd, args);
-  Logger.info(`Formatter registered\n${JSON.stringify({ documentSelector, command })}`);
+  Logger.info(`${ruleName} - Formatter registered`);
 
   return new vscode.Disposable(() => {
-    Logger.info(`Formatter unregistering\n${JSON.stringify({ documentSelector, command })}`);
+    Logger.info(`${ruleName} - Formatter unregistering`);
     fullDisposable.dispose();
     rangeDisposable.dispose();
-    Logger.info(`Formatter unregistered\n${JSON.stringify({ documentSelector, command })}`);
+    Logger.info(`${ruleName} - Formatter unregistered`);
   });
 }
 

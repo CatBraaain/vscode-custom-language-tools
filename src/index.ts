@@ -37,12 +37,12 @@ async function registerCustomLanguageConfig(): Promise<vscode.Disposable[]> {
     const documentSelector = rule.condition.documentSelector;
     if (rule.action.lsp) {
       rule.action.lsp.forEach(async (command) => {
-        disposables.push(await registerLsp(documentSelector, command));
+        disposables.push(await registerLsp(documentSelector, command, rule.name));
       });
     }
     if (rule.action.formatter) {
       rule.action.formatter.forEach((command) => {
-        disposables.push(registerFormatter(documentSelector, command));
+        disposables.push(registerFormatter(documentSelector, command, rule.name));
       });
     }
   }

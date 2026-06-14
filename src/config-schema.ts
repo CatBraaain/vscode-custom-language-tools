@@ -16,6 +16,7 @@ const DocumentSelectorSchema = z.union([
 ]);
 
 export const RuleSchema = z.object({
+  name: z.string().describe("Name for this rule"),
   condition: z
     .object({
       documentSelector: DocumentSelectorSchema.describe(

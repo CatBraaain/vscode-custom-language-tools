@@ -3,6 +3,7 @@ import * as vscode from "vscode";
 import { z } from "zod";
 import { spawn } from "node:child_process";
 
+import { Logger } from "./logger";
 import { RuleSchema, Rule } from "./config-schema";
 
 export interface Config {
@@ -48,7 +49,11 @@ async function isConditionSatisfied(rule: Rule, workspacePath: string): Promise<
   const { when, whenNot } = rule.condition;
   const isWhenSatisfied = !when || (await executeCommand(when, workspacePath)) === 0;
   const isWhenNotSatisfied = !whenNot || (await executeCommand(whenNot, workspacePath)) === 1;
-  return isWhenSatisfied && isWhenNotSatisfied;
+
+  const isSatisfied = isWhenSatisfied && isWhenNotSatisfied;
+  Logger.info(`${rule.name} - condition ${isSatisfied ? "matched" : "not matched"}`);
+
+  return isSatisfied;
 }
 
 async function executeCommand(command: string, workspacePath: string): Promise<number> {

@@ -23,6 +23,7 @@ describe("getConfig", () => {
       "rules",
       [
         {
+          name: "Prettier",
           condition: { documentSelector: ["javascript"] },
           action: { formatter: ["prettier --stdin-filepath ${filePath}"] },
         },
@@ -42,7 +43,7 @@ describe("getConfig", () => {
       "rules",
       [
         {
-          // Missing required 'condition' field
+          // Missing required 'name' and 'condition' fields
           action: { formatter: ["prettier --stdin-filepath ${filePath}"] },
         } as any,
       ],
