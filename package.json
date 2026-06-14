@@ -151,17 +151,11 @@
                 "properties": {
                   "lsp": {
                     "description": "Array of LSP server commands",
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
+                    "type": "string"
                   },
                   "formatter": {
                     "description": "Array of formatter commands",
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
+                    "type": "string"
                   }
                 },
                 "description": "Actions to apply when conditions are met"
