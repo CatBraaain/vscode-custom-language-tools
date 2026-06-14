@@ -41,7 +41,7 @@ export const RuleSchema = z.object({
     .describe("Conditions for applying this rule"),
   action: z
     .object({
-      server: z.array(z.string()).optional().describe("Array of LSP server commands"),
+      lsp: z.array(z.string()).optional().describe("Array of LSP server commands"),
       formatter: z.array(z.string()).optional().describe("Array of formatter commands"),
     })
     .describe("Actions to apply when conditions are met"),

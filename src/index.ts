@@ -35,8 +35,8 @@ async function registerCustomLanguageConfig(): Promise<vscode.Disposable[]> {
   const disposables: vscode.Disposable[] = [];
   for (const rule of await getMatchedRules()) {
     const documentSelector = rule.condition.documentSelector;
-    if (rule.action.server) {
-      rule.action.server.forEach(async (command) => {
+    if (rule.action.lsp) {
+      rule.action.lsp.forEach(async (command) => {
         disposables.push(await registerLsp(documentSelector, command));
       });
     }

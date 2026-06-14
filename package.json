@@ -145,7 +145,7 @@
               "action": {
                 "type": "object",
                 "properties": {
-                  "server": {
+                  "lsp": {
                     "description": "Array of LSP server commands",
                     "type": "array",
                     "items": {
