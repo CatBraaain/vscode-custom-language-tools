@@ -61,6 +61,7 @@ async function executeCommand(command: string, workspacePath: string): Promise<n
     const child = spawn(cmd, args, {
       cwd: workspacePath,
       timeout: 5000,
+      stdio: ["ignore", "pipe", "pipe"],
     });
     child.on("close", (code) => resolve(code ?? 1));
     child.on("error", () => resolve(1));
