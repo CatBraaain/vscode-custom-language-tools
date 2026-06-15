@@ -2,7 +2,7 @@ import { execa, Result, ExecaError } from "execa";
 import * as vscode from "vscode";
 import { z } from "zod";
 
-import { RuleSchema, Rule, DocumentSelector } from "./config-schema";
+import { RuleSchema, Rule } from "./config-schema";
 import { Logger } from "./logger";
 
 export interface Config {
@@ -64,33 +64,4 @@ async function executeCommand(
     cwd: workspacePath,
     reject: false,
   })`${command}`;
-}
-
-export async function buildDocumentSelector(target: Rule["target"]): Promise<DocumentSelector> {
-  const selectors: DocumentSelector = [];
-
-  if (target.files) {
-    const workspacePaths = vscode.workspace.workspaceFolders?.map((w) => w.uri.fsPath) ?? [];
-    const stdouts = await Promise.all(
-      workspacePaths.map(
-        async (workspacePath) => (await executeCommand(target.files!, workspacePath)).stdout,
-      ),
-    );
-    const filePaths = stdouts
-      .join("\n")
-      .split("\n")
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0);
-    for (const lang of target.langs) {
-      for (const filePath of filePaths) {
-        selectors.push({ language: lang, pattern: filePath });
-      }
-    }
-  } else {
-    for (const lang of target.langs) {
-      selectors.push({ language: lang });
-    }
-  }
-
-  return selectors;
 }

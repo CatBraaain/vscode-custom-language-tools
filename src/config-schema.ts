@@ -2,17 +2,7 @@ import { z } from "zod";
 
 export const RuleSchema = z.object({
   name: z.string().describe("Name for this rule"),
-  target: z
-    .object({
-      langs: z.array(z.string()).describe("Language IDs. '*' matches all languages"),
-      files: z
-        .string()
-        .optional()
-        .describe(
-          "Command returning newline-separated file paths. (.e.g, 'find . -name '*.ts', 'grep -l TODO .')",
-        ),
-    })
-    .describe("Target files of this rule"),
+  langs: z.array(z.string()).describe("Language IDs. '*' matches all languages"),
   condition: z
     .object({
       when: z
@@ -48,8 +38,3 @@ export const ConfigSchema = z.object({
 
 export type Config = z.infer<typeof ConfigSchema>;
 export type Rule = z.infer<typeof RuleSchema>;
-
-export type DocumentSelector = {
-  language: string;
-  pattern?: string;
-}[];

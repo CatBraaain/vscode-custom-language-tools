@@ -70,26 +70,12 @@
                 "type": "string",
                 "description": "Name for this rule"
               },
-              "target": {
-                "type": "object",
-                "properties": {
-                  "langs": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    },
-                    "description": "Language IDs. '*' matches all languages"
-                  },
-                  "files": {
-                    "description": "Command returning newline-separated file paths. (.e.g, 'find . -name '*.ts', 'grep -l TODO .')",
-                    "type": "string"
-                  }
+              "langs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
                 },
-                "required": [
-                  "langs"
-                ],
-                "description": "Target files of this rule",
-                "additionalProperties": false
+                "description": "Language IDs. '*' matches all languages"
               },
               "condition": {
                 "default": {},
@@ -125,7 +111,7 @@
             },
             "required": [
               "name",
-              "target",
+              "langs",
               "action"
             ],
             "additionalProperties": false

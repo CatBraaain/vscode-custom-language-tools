@@ -9,11 +9,10 @@ import {
   CloseAction,
 } from "vscode-languageclient/node";
 
-import { DocumentSelector } from "./config-schema";
 import { Logger } from "./logger";
 
 export async function registerLsp(
-  documentSelector: DocumentSelector,
+  langs: string[],
   command: string,
   ruleName: string,
 ): Promise<vscode.Disposable> {
@@ -29,7 +28,7 @@ export async function registerLsp(
       args,
     } satisfies Executable,
     {
-      documentSelector: documentSelector as any,
+      documentSelector: langs,
       errorHandler: {
         error(error, _message, _count) {
           return { action: ErrorAction.Continue, message: `${command}: ${JSON.stringify(error)}` };
