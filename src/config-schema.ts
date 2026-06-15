@@ -1,51 +1,45 @@
 import { z } from "zod";
 
-const DocumentFilterSchema = z
-  .object({
-    language: z.string().optional(),
-    notebookType: z.string().optional(),
-    pattern: z.string().optional(),
-    scheme: z.string().optional(),
-  })
-  .describe("DocumentFilter");
-const LanguageIDSchema = z.string().describe("Language ID (e.g., 'javascript', 'typescript')");
-const DocumentFilterOrLanguageIDSchema = z.union([DocumentFilterSchema, LanguageIDSchema]);
-const DocumentSelectorSchema = z.union([
-  DocumentFilterOrLanguageIDSchema,
-  z.array(DocumentFilterOrLanguageIDSchema),
-]);
-
 export const RuleSchema = z.object({
   name: z.string().describe("Name for this rule"),
-  condition: z
+  target: z
     .object({
-      documentSelector: DocumentSelectorSchema.describe(
-        [
-          "Array of DocumentFilter or LanguageID for target files.",
-          "(.e.g, ['javascript', 'typescript', { language: 'json', pattern: '**/package.json' }])",
-          "see details in https://code.visualstudio.com/api/references/vscode-api#DocumentFilter",
-        ].join("\n"),
-      ),
-      when: z
+      langs: z.array(z.string()).describe("Language IDs. '*' matches all languages"),
+      files: z
         .string()
         .optional()
         .describe(
-          "Command executed to determine whether this rule is active (true if exit code is 0)",
+          "Command returning newline-separated file paths. (.e.g, 'find . -name '*.ts', 'grep -l TODO .')",
         ),
+    })
+    .describe("Target files of this rule"),
+  condition: z
+    .object({
+      when: z
+        .string()
+        .optional()
+        .describe("Command returning exit code 0 to enable rule. (.e.g, 'npm ls biome')"),
       whenNot: z
         .string()
         .optional()
         .describe(
-          "Command executed to determine whether this rule is active (true if exit code is 1)",
+          "Command returning exit code 0 to disable rule. (.e.g, 'grep vite-plus package.json')",
         ),
     })
+    .optional()
+    .default({})
     .describe("Conditions for applying this rule"),
   action: z
     .object({
-      lsp: z.string().optional().describe("Array of LSP server commands"),
-      formatter: z.string().optional().describe("Array of formatter commands"),
+      lsp: z.string().optional().describe("LSP server commands. (.e.g, 'npx biome lsp-proxy')"),
+      formatter: z
+        .string()
+        .optional()
+        .describe(
+          "Formatter commands. Allows ${filePath} variable. (.e.g, 'npx biome format --stdin-file-path=${filePath}')",
+        ),
     })
-    .describe("Actions to apply when conditions are met"),
+    .describe("Actions applied when rule is active"),
 });
 
 export const ConfigSchema = z.object({
@@ -54,4 +48,8 @@ export const ConfigSchema = z.object({
 
 export type Config = z.infer<typeof ConfigSchema>;
 export type Rule = z.infer<typeof RuleSchema>;
-export type DocumentSelector = z.infer<typeof DocumentSelectorSchema>;
+
+export type DocumentSelector = {
+  language: string;
+  pattern?: string;
+}[];

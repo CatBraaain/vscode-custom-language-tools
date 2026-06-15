@@ -1,10 +1,8 @@
-import { spawn } from "node:child_process";
-
-import { parseArgsStringToArgv } from "string-argv";
+import { execa, Result, ExecaError } from "execa";
 import * as vscode from "vscode";
 import { z } from "zod";
 
-import { RuleSchema, Rule } from "./config-schema";
+import { RuleSchema, Rule, DocumentSelector } from "./config-schema";
 import { Logger } from "./logger";
 
 export interface Config {
@@ -46,8 +44,9 @@ export async function getMatchedRules(): Promise<Rule[]> {
 
 async function isConditionSatisfied(rule: Rule, workspacePath: string): Promise<boolean> {
   const { when, whenNot } = rule.condition;
-  const isWhenSatisfied = !when || (await executeCommand(when, workspacePath)) === 0;
-  const isWhenNotSatisfied = !whenNot || (await executeCommand(whenNot, workspacePath)) === 1;
+  const isWhenSatisfied = !when || (await executeCommand(when, workspacePath)).exitCode === 0;
+  const isWhenNotSatisfied =
+    !whenNot || (await executeCommand(whenNot, workspacePath)).exitCode === 1;
 
   const isSatisfied = isWhenSatisfied && isWhenNotSatisfied;
   Logger.info(`${rule.name} - condition ${isSatisfied ? "matched" : "not matched"}`);
@@ -55,15 +54,43 @@ async function isConditionSatisfied(rule: Rule, workspacePath: string): Promise<
   return isSatisfied;
 }
 
-async function executeCommand(command: string, workspacePath: string): Promise<number> {
-  const [cmd, ...args] = parseArgsStringToArgv(command);
-  return new Promise<number>((resolve) => {
-    const child = spawn(cmd, args, {
-      cwd: workspacePath,
-      timeout: 5000,
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    child.on("close", (code) => resolve(code ?? 1));
-    child.on("error", () => resolve(1));
-  });
+async function executeCommand(
+  command: string,
+  workspacePath: string,
+): Promise<Result | ExecaError> {
+  return await execa({
+    shell: true,
+    stdin: "ignore",
+    cwd: workspacePath,
+    reject: false,
+  })`${command}`;
+}
+
+export async function buildDocumentSelector(target: Rule["target"]): Promise<DocumentSelector> {
+  const selectors: DocumentSelector = [];
+
+  if (target.files) {
+    const workspacePaths = vscode.workspace.workspaceFolders?.map((w) => w.uri.fsPath) ?? [];
+    const stdouts = await Promise.all(
+      workspacePaths.map(
+        async (workspacePath) => (await executeCommand(target.files!, workspacePath)).stdout,
+      ),
+    );
+    const filePaths = stdouts
+      .join("\n")
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+    for (const lang of target.langs) {
+      for (const filePath of filePaths) {
+        selectors.push({ language: lang, pattern: filePath });
+      }
+    }
+  } else {
+    for (const lang of target.langs) {
+      selectors.push({ language: lang });
+    }
+  }
+
+  return selectors;
 }

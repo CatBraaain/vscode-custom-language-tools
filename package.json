@@ -33,6 +33,7 @@
     "test": "bun run build && bun run build:test && vscode-test"
   },
   "dependencies": {
+    "execa": "^9.6.1",
     "string-argv": "^0.3.2",
     "vscode-languageclient": "^9.0.1",
     "zod": "^4.4.3"
@@ -69,101 +70,59 @@
                 "type": "string",
                 "description": "Name for this rule"
               },
-              "condition": {
+              "target": {
                 "type": "object",
                 "properties": {
-                  "documentSelector": {
-                    "anyOf": [
-                      {
-                        "anyOf": [
-                          {
-                            "type": "object",
-                            "properties": {
-                              "language": {
-                                "type": "string"
-                              },
-                              "notebookType": {
-                                "type": "string"
-                              },
-                              "pattern": {
-                                "type": "string"
-                              },
-                              "scheme": {
-                                "type": "string"
-                              }
-                            },
-                            "description": "DocumentFilter"
-                          },
-                          {
-                            "type": "string",
-                            "description": "Language ID (e.g., 'javascript', 'typescript')"
-                          }
-                        ]
-                      },
-                      {
-                        "type": "array",
-                        "items": {
-                          "anyOf": [
-                            {
-                              "type": "object",
-                              "properties": {
-                                "language": {
-                                  "type": "string"
-                                },
-                                "notebookType": {
-                                  "type": "string"
-                                },
-                                "pattern": {
-                                  "type": "string"
-                                },
-                                "scheme": {
-                                  "type": "string"
-                                }
-                              },
-                              "description": "DocumentFilter"
-                            },
-                            {
-                              "type": "string",
-                              "description": "Language ID (e.g., 'javascript', 'typescript')"
-                            }
-                          ]
-                        }
-                      }
-                    ],
-                    "description": "Array of DocumentFilter or LanguageID for target files.\n(.e.g, ['javascript', 'typescript', { language: 'json', pattern: '**/package.json' }])\nsee details in https://code.visualstudio.com/api/references/vscode-api#DocumentFilter"
+                  "langs": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Language IDs. '*' matches all languages"
                   },
-                  "when": {
-                    "description": "Command executed to determine whether this rule is active (true if exit code is 0)",
-                    "type": "string"
-                  },
-                  "whenNot": {
-                    "description": "Command executed to determine whether this rule is active (true if exit code is 1)",
+                  "files": {
+                    "description": "Command returning newline-separated file paths. (.e.g, 'find . -name '*.ts', 'grep -l TODO .')",
                     "type": "string"
                   }
                 },
                 "required": [
-                  "documentSelector"
+                  "langs"
                 ],
-                "description": "Conditions for applying this rule"
+                "description": "Target files of this rule"
+              },
+              "condition": {
+                "default": {},
+                "description": "Conditions for applying this rule",
+                "type": "object",
+                "properties": {
+                  "when": {
+                    "description": "Command returning exit code 0 to enable rule. (.e.g, 'npm ls biome')",
+                    "type": "string"
+                  },
+                  "whenNot": {
+                    "description": "Command returning exit code 0 to disable rule. (.e.g, 'grep vite-plus package.json')",
+                    "type": "string"
+                  }
+                }
               },
               "action": {
                 "type": "object",
                 "properties": {
                   "lsp": {
-                    "description": "Array of LSP server commands",
+                    "description": "LSP server commands. (.e.g, 'npx biome lsp-proxy')",
                     "type": "string"
                   },
                   "formatter": {
-                    "description": "Array of formatter commands",
+                    "description": "Formatter commands. Allows ${filePath} variable. (.e.g, 'npx biome format --stdin-file-path=${filePath}')",
                     "type": "string"
                   }
                 },
-                "description": "Actions to apply when conditions are met"
+                "description": "Actions applied when rule is active"
               }
             },
             "required": [
               "name",
-              "condition",
+              "target",
               "action"
             ]
           }

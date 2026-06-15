@@ -24,7 +24,7 @@ describe("getConfig", () => {
       [
         {
           name: "Prettier",
-          condition: { documentSelector: ["javascript"] },
+          target: { langs: ["javascript"] },
           action: { formatter: "prettier --stdin-filepath ${filePath}" },
         },
       ],
@@ -32,7 +32,7 @@ describe("getConfig", () => {
     );
     const config = getConfig();
     assert.strictEqual(config.rules.length, 1);
-    assert.deepStrictEqual(config.rules[0].condition.documentSelector, ["javascript"]);
+    assert.deepStrictEqual(config.rules[0].target.langs, ["javascript"]);
     assert.deepStrictEqual(
       config.rules[0].action.formatter,
       "prettier --stdin-filepath ${filePath}",

@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import { getMatchedRules } from "./config";
+import { buildDocumentSelector, getMatchedRules } from "./config";
 import { registerFormatter } from "./formatter";
 import { Logger } from "./logger";
 import { registerLsp } from "./lsp";
@@ -34,7 +34,7 @@ export async function activate(context: vscode.ExtensionContext) {
 async function registerCustomLanguageConfig(): Promise<vscode.Disposable[]> {
   const disposables: vscode.Disposable[] = [];
   for (const rule of await getMatchedRules()) {
-    const documentSelector = rule.condition.documentSelector;
+    const documentSelector = await buildDocumentSelector(rule.target);
     if (rule.action.lsp) {
       disposables.push(await registerLsp(documentSelector, rule.action.lsp, rule.name));
     }
