@@ -1,6 +1,5 @@
-import { execFile } from "node:child_process";
+import { execa } from "execa";
 
-import { parseArgsStringToArgv } from "string-argv";
 import * as vscode from "vscode";
 
 import { DocumentSelector } from "./config-schema";
@@ -11,11 +10,9 @@ export function registerFormatter(
   command: string,
   ruleName: string,
 ): vscode.Disposable {
-  const [cmd, ...args] = parseArgsStringToArgv(command);
-
   Logger.info(`${ruleName} - Formatter registering`);
-  const fullDisposable = registerFullFormatter(documentSelector, cmd, args);
-  const rangeDisposable = registerRangeFormatter(documentSelector, cmd, args);
+  const fullDisposable = registerFullFormatter(documentSelector, command);
+  const rangeDisposable = registerRangeFormatter(documentSelector, command);
   Logger.info(`${ruleName} - Formatter registered`);
 
   return new vscode.Disposable(() => {
@@ -28,8 +25,7 @@ export function registerFormatter(
 
 function registerFullFormatter(
   documentSelector: DocumentSelector,
-  cmd: string,
-  args: string[],
+  command: string,
 ): vscode.Disposable {
   return vscode.languages.registerDocumentFormattingEditProvider(documentSelector, {
     provideDocumentFormattingEdits(
@@ -37,15 +33,14 @@ function registerFullFormatter(
       _options: vscode.FormattingOptions,
       token: vscode.CancellationToken,
     ): vscode.ProviderResult<vscode.TextEdit[]> {
-      return formatDocument(document, cmd, args, undefined, token);
+      return formatDocument(document, command, undefined, token);
     },
   } satisfies vscode.DocumentFormattingEditProvider);
 }
 
 function registerRangeFormatter(
   documentSelector: DocumentSelector,
-  cmd: string,
-  args: string[],
+  command: string,
 ): vscode.Disposable {
   return vscode.languages.registerDocumentRangeFormattingEditProvider(documentSelector, {
     provideDocumentRangeFormattingEdits(
@@ -54,52 +49,32 @@ function registerRangeFormatter(
       _options: vscode.FormattingOptions,
       token: vscode.CancellationToken,
     ): vscode.ProviderResult<vscode.TextEdit[]> {
-      return formatDocument(document, cmd, args, range, token);
+      return formatDocument(document, command, range, token);
     },
   } satisfies vscode.DocumentRangeFormattingEditProvider);
 }
 
-function formatDocument(
+async function formatDocument(
   document: vscode.TextDocument,
-  cmd: string,
-  args: string[],
+  command: string,
   range: vscode.Range | undefined,
-  token: vscode.CancellationToken,
+  _token: vscode.CancellationToken,
 ): Promise<vscode.TextEdit[]> {
-  return new Promise<vscode.TextEdit[]>((resolve) => {
-    const child = execFile(
-      cmd,
-      args.map((arg) => arg.replace("${filePath}", document.fileName)),
-      {
-        maxBuffer: 10 * 1024 * 1024, // 10MB
-        timeout: 3_000,
-        encoding: "utf8",
-      },
-      (error, stdout, stderr) => {
-        if (token.isCancellationRequested) {
-          Logger.debug(`Formatter cancelled (${cmd})`);
-          resolve([]);
-          return;
-        }
-        if (error) {
-          Logger.error(`Formatter error (${cmd}): ${error.message}`);
-          resolve([]);
-          return;
-        }
-        if (stderr) {
-          Logger.warn(`Formatter stderr (${cmd}): ${stderr}`);
-        }
+  const resolvedCommand = command.replace("${filePath}", document.fileName);
+  const res = await execa({
+    input: document.getText(range),
+    shell: true,
+    reject: false,
+  })`${resolvedCommand}`;
 
-        const targetRange =
-          range ?? document.validateRange(new vscode.Range(0, 0, document.lineCount, 0));
-        resolve([vscode.TextEdit.replace(targetRange, stdout)]);
-      },
+  if (res.exitCode !== 0) {
+    Logger.warn(
+      `Formatter failed (${resolvedCommand}): ${JSON.stringify({ exitCode: res.exitCode, stderr: res.stderr })}`,
     );
-
-    child.stdin?.end(document.getText(range));
-
-    token.onCancellationRequested(() => {
-      child.kill();
-    });
-  });
+    return [];
+  } else {
+    const targetRange =
+      range ?? document.validateRange(new vscode.Range(0, 0, document.lineCount, 0));
+    return [vscode.TextEdit.replace(targetRange, res.stdout)];
+  }
 }
