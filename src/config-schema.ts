@@ -2,7 +2,10 @@ import { z } from "zod";
 
 export const RuleSchema = z.object({
   name: z.string().describe("Name for this rule"),
-  langs: z.array(z.string()).describe("Language IDs. '*' matches all languages"),
+  langs: z
+    .array(z.string())
+    .describe("Language IDs. '*' matches all languages")
+    .transform((langs) => langs.sort((a, b) => a.localeCompare(b))),
   condition: z
     .object({
       when: z

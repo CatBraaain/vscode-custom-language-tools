@@ -1,45 +1,38 @@
 import * as vscode from "vscode";
 
-import { getMatchedRules } from "./config";
-import { registerFormatter } from "./formatter";
+import { ToolManager } from "./tool-manager";
 import { Logger } from "./logger";
-import { registerLsp } from "./lsp";
 
 export async function activate(context: vscode.ExtensionContext) {
   Logger.info("Activating Custom Language Tools extension...");
 
-  let registrations: vscode.Disposable[] = [];
+  const toolManager = new ToolManager();
+  await toolManager.syncRules();
+  await toolManager.syncServices();
 
-  registrations = await registerCustomLanguageConfig();
-
+  Logger.info("Custom Language Tools extension activated");
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration(async (event) => {
       if (event.affectsConfiguration("customLanguageTools.rules")) {
-        registrations.forEach((e) => e.dispose());
-        registrations = await registerCustomLanguageConfig();
+        await toolManager.syncRules();
+        await toolManager.syncServices();
       }
     }),
-    vscode.commands.registerCommand("customLanguageTools.restartAll", async () => {
-      registrations.forEach((e) => e.dispose());
-      registrations = await registerCustomLanguageConfig();
+    vscode.workspace.onDidOpenTextDocument(async (_event) => {
+      await toolManager.syncServices();
     }),
-    new vscode.Disposable(() => {
-      registrations.forEach((e) => e.dispose());
+    vscode.workspace.onDidSaveTextDocument(async (_event) => {
+      await toolManager.syncServices();
+    }),
+    vscode.commands.registerCommand("customLanguageTools.restartAll", async () => {
+      await toolManager.unregisterAll();
+      await toolManager.syncRules();
+      await toolManager.syncServices();
+    }),
+    new vscode.Disposable(async () => {
+      await toolManager.unregisterAll();
     }),
   );
 
   Logger.info("Custom Language Tools extension activated");
-}
-
-async function registerCustomLanguageConfig(): Promise<vscode.Disposable[]> {
-  const disposables: vscode.Disposable[] = [];
-  for (const rule of await getMatchedRules()) {
-    if (rule.action.lsp) {
-      disposables.push(await registerLsp(rule.langs, rule.action.lsp, rule.name));
-    }
-    if (rule.action.formatter) {
-      disposables.push(registerFormatter(rule.langs, rule.action.formatter, rule.name));
-    }
-  }
-  return disposables;
 }

@@ -60,7 +60,6 @@
       "title": "Custom Language Tools",
       "properties": {
         "customLanguageTools.rules": {
-          "default": [],
           "description": "Rule-based configuration",
           "type": "array",
           "items": {
