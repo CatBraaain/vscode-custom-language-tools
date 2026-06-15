@@ -4,7 +4,14 @@ import { ConfigSchema } from "../src/config-schema";
 
 const packageJsonConfiguration = {
   title: "Custom Language Tools",
-  properties: ConfigSchema.toJSONSchema({ io: "input" }).properties,
+  properties: ConfigSchema.toJSONSchema({
+    io: "input",
+    override: (ctx) => {
+      if (ctx.jsonSchema.type === "object") {
+        ctx.jsonSchema.additionalProperties = false;
+      }
+    },
+  }).properties,
 };
 const packageJson = JSON.parse(readFileSync("package.json", "utf-8")) as {
   contributes?: {

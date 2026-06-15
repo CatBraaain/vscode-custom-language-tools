@@ -88,7 +88,8 @@
                 "required": [
                   "langs"
                 ],
-                "description": "Target files of this rule"
+                "description": "Target files of this rule",
+                "additionalProperties": false
               },
               "condition": {
                 "default": {},
@@ -103,7 +104,8 @@
                     "description": "Command returning exit code 0 to disable rule. (.e.g, 'grep vite-plus package.json')",
                     "type": "string"
                   }
-                }
+                },
+                "additionalProperties": false
               },
               "action": {
                 "type": "object",
@@ -117,14 +119,16 @@
                     "type": "string"
                   }
                 },
-                "description": "Actions applied when rule is active"
+                "description": "Actions applied when rule is active",
+                "additionalProperties": false
               }
             },
             "required": [
               "name",
               "target",
               "action"
-            ]
+            ],
+            "additionalProperties": false
           }
         }
       }
