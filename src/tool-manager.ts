@@ -17,6 +17,7 @@ type RuleContext = {
 export class ToolManager {
   ruleContexts: RuleContext[] = [];
   oldRuleContexts: RuleContext[] = [];
+  formatterService?: vscode.Disposable;
 
   public static getConfig(): { rules: Rule[] } {
     const config = vscode.workspace.getConfiguration("customLanguageTools");
@@ -86,6 +87,11 @@ export class ToolManager {
 
     await this.syncConditions();
 
+    if (!this.formatterService) {
+      this.formatterService = registerFormatter("*", this);
+      Logger.info("Registered formatter");
+    }
+
     const staleServices = this.oldRuleContexts.filter(
       (oldCtx) =>
         oldCtx.service && !this.ruleContexts.some((newCtx) => newCtx.ruleKey === oldCtx.ruleKey),
@@ -111,11 +117,6 @@ export class ToolManager {
         if (ctx.rule.action.lsp) {
           services.push(await registerLsp(ctx.rule.document, ctx.rule.action.lsp, ctx.rule.name));
         }
-        if (ctx.rule.action.formatter) {
-          services.push(
-            registerFormatter(ctx.rule.document, ctx.rule.action.formatter, ctx.rule.name),
-          );
-        }
         ctx.service = vscode.Disposable.from(...services);
       }),
     );
@@ -128,7 +129,10 @@ export class ToolManager {
   }
 
   public async unregisterAll(): Promise<void> {
-    Logger.info(`Unregistering all`);
+    Logger.info("Unregistering all");
+
+    this.formatterService?.dispose();
+    this.formatterService = undefined;
 
     this.ruleContexts.forEach((ctx) => {
       ctx.service?.dispose();
