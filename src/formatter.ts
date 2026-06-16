@@ -4,13 +4,13 @@ import * as vscode from "vscode";
 import { Logger } from "./logger";
 
 export function registerFormatter(
-  langs: string[],
+  document: vscode.DocumentSelector,
   command: string,
   ruleName: string,
 ): vscode.Disposable {
   Logger.debug(`${ruleName} - Formatter registering`);
-  const fullDisposable = registerFullFormatter(langs, command);
-  const rangeDisposable = registerRangeFormatter(langs, command);
+  const fullDisposable = registerFullFormatter(document, command);
+  const rangeDisposable = registerRangeFormatter(document, command);
   Logger.debug(`${ruleName} - Formatter registered`);
 
   return new vscode.Disposable(() => {
@@ -21,8 +21,11 @@ export function registerFormatter(
   });
 }
 
-function registerFullFormatter(langs: string[], command: string): vscode.Disposable {
-  return vscode.languages.registerDocumentFormattingEditProvider(langs, {
+function registerFullFormatter(
+  document: vscode.DocumentSelector,
+  command: string,
+): vscode.Disposable {
+  return vscode.languages.registerDocumentFormattingEditProvider(document, {
     provideDocumentFormattingEdits(
       document: vscode.TextDocument,
       _options: vscode.FormattingOptions,
@@ -33,8 +36,11 @@ function registerFullFormatter(langs: string[], command: string): vscode.Disposa
   } satisfies vscode.DocumentFormattingEditProvider);
 }
 
-function registerRangeFormatter(langs: string[], command: string): vscode.Disposable {
-  return vscode.languages.registerDocumentRangeFormattingEditProvider(langs, {
+function registerRangeFormatter(
+  document: vscode.DocumentSelector,
+  command: string,
+): vscode.Disposable {
+  return vscode.languages.registerDocumentRangeFormattingEditProvider(document, {
     provideDocumentRangeFormattingEdits(
       document: vscode.TextDocument,
       range: vscode.Range,

@@ -12,7 +12,7 @@ import {
 import { Logger } from "./logger";
 
 export async function registerLsp(
-  langs: string[],
+  document: vscode.DocumentSelector,
   command: string,
   ruleName: string,
 ): Promise<vscode.Disposable> {
@@ -28,7 +28,7 @@ export async function registerLsp(
       args,
     } satisfies Executable,
     {
-      documentSelector: langs,
+      documentSelector: document as any,
       errorHandler: {
         error(error, _message, _count) {
           return { action: ErrorAction.Continue, message: `${command}: ${JSON.stringify(error)}` };

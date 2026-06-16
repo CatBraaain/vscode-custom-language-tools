@@ -10,12 +10,20 @@ export function getConfig(): { rules: Rule[] } {
   return { rules: result.data ?? [] };
 }
 
+const DocumentFilterSchema = z.object({
+  language: z.string().optional(),
+  scheme: z.string().optional(),
+  pattern: z.string().optional(),
+  notebook: z.string().optional(),
+});
+
 export const RuleSchema = z.object({
   name: z.string().describe("Name for this rule"),
-  langs: z
-    .array(z.string())
-    .describe("Language IDs. '*' matches all languages")
-    .transform((langs) => langs.sort((a, b) => a.localeCompare(b))),
+  document: z
+    .array(z.union([z.string(), DocumentFilterSchema]))
+    .describe(
+      "Document selector. Can be a language ID string or a DocumentFilter object. '*' matches all languages",
+    ),
   condition: z
     .object({
       when: z

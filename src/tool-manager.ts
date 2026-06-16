@@ -99,11 +99,11 @@ export class ToolManager {
       newServices.map(async (ctx) => {
         const services: vscode.Disposable[] = [];
         if (ctx.rule.action.lsp) {
-          services.push(await registerLsp(ctx.rule.langs, ctx.rule.action.lsp, ctx.rule.name));
+          services.push(await registerLsp(ctx.rule.document, ctx.rule.action.lsp, ctx.rule.name));
         }
         if (ctx.rule.action.formatter) {
           services.push(
-            registerFormatter(ctx.rule.langs, ctx.rule.action.formatter, ctx.rule.name),
+            registerFormatter(ctx.rule.document, ctx.rule.action.formatter, ctx.rule.name),
           );
         }
         ctx.service = vscode.Disposable.from(...services);
