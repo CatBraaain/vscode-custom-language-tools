@@ -68,6 +68,7 @@ async function formatDocument(
     shell: true,
     cwd,
     reject: false,
+    stripFinalNewline: false,
   })`${resolvedCommand}`;
 
   if (res.exitCode !== 0) {
