@@ -7,23 +7,12 @@ A unified VSCode extension for configuring custom language settings, formatters,
 ### Custom Formatters
 
 - Register custom formatters for any language
-- Conditional formatting based on:
-  - Configuration file presence
-  - Specific string patterns in files
-- Full document and range formatting support
-
-### Custom Language Properties
-
-- Dynamic language configuration:
-  - Comment definitions (line and block)
-  - Bracket pairs
-  - Auto-closing character pairs
-- Integration with existing language extension settings
-- Auto-completion when editing settings.json
+- Conditional formatting based on shell command execution results
 
 ### Custom LSP Config
 
 - Multiple language server management
+- Dynamic server registration based on workspace conditions
 
 ## Configuration
 
@@ -31,60 +20,71 @@ The extension uses a rule-based configuration system. Add rules to your settings
 
 ### Example
 
-Each rule defines conditions (`when`) and actions (`use`):
+Before using this example, uninstall conflicting extensions and install the ESLint language server:
+
+```sh
+code --uninstall-extension esbenp.prettier-vscode
+code --uninstall-extension dbaeumer.vscode-eslint
+code --uninstall-extension oxc.oxc-vscode
+code --uninstall-extension biomejs.biome
+
+npm i -g vscode-langservers-extracted
+```
 
 ```json
 {
   "customLanguageTools.rules": [
     {
-      "when": {
-        "langs": ["javascript", "typescript"],
-        "required": {
-          "file": "package.json",
-          "contains": "prettier"
-        }
+      "name": "Prettier",
+      "langs": ["javascript", "typescript"],
+      "condition": {
+        "when": "npm ls prettier"
       },
-      "use": {
-        "formatter": ["npx prettier --stdin-filepath ${filePath}"]
+      "action": {
+        "formatter": "npx prettier --stdin-filepath ${filePath}"
       }
     },
     {
-      "when": {
-        "langs": ["javascript", "typescript"],
-        "required": {
-          "file": "package.json",
-          "contains": "eslint"
-        }
+      "name": "ESLint",
+      "langs": ["javascript", "typescript"],
+      "condition": {
+        "when": "npm ls eslint"
       },
-      "use": {
-        "lsp": ["npx vscode-eslint-language-server --stdio"]
+      "action": {
+        "lsp": "vscode-eslint-language-server --stdio"
       }
     },
     {
-      "when": {
-        "langs": ["javascript", "typescript"],
-        "required": {
-          "file": "package.json",
-          "contains": "biome@biomejs/biome"
-        }
+      "name": "Biome",
+      "langs": ["javascript", "typescript"],
+      "condition": {
+        "when": "npm ls @biomejs/biome"
       },
-      "use": {
-        // "formatter": ["npx biome@biomejs/biome --stdin-file-path=${filePath}"],
-        "lsp": ["npx biome lsp-proxy"]
+      "action": {
+        "formatter": "npx @biomejs/biome format --stdin-file-path=${filePath}",
+        "lsp": "npx @biomejs/biome lsp-proxy"
       }
     },
     {
-      "when": {
-        "langs": ["javascript", "typescript"],
-        "required": {
-          "file": "package.json",
-          "contains": "vite-plus",
-          "notContains": "prettier|biome"
-        }
+      "name": "VitePlus",
+      "langs": ["javascript", "typescript"],
+      "condition": {
+        "when": "npm ls vite-plus"
       },
-      "use": {
-        "formatter": ["npx oxfmt --fix"],
-        "lsp": ["npx oxlint --lsp"]
+      "action": {
+        "formatter": "vp fmt --stdin-filepath=${filePath}",
+        "lsp": "vp lint --lsp"
+      }
+    },
+    {
+      "name": "Oxc",
+      "langs": ["javascript", "typescript"],
+      "condition": {
+        "whenNot": "npm ls prettier eslint @biomejs/biome vite-plus"
+      },
+      "action": {
+        "formatter": "npx oxfmt --stdin-filepath=${filePath}",
+        "lsp": "npx oxlint --lsp"
       }
     }
   ]
@@ -93,24 +93,27 @@ Each rule defines conditions (`when`) and actions (`use`):
 
 ### Configuration Options
 
-#### `when` - Conditions
+#### `name` (required)
 
-- `langs` (required): Array of target language IDs
-- `required` (optional): Conditions for rule activation
-  - `file` (required): Regex pattern for required file (e.g., `package\\.json`)
-  - `contains` (optional): Regex pattern that must be contained in the file
-  - `notContains` (optional): Regex pattern that must NOT be contained in the file
+Name for this rule.
 
-#### `use` - Actions
+#### `langs` (required)
 
-- `formatter` (optional): Array of formatter command strings
-- `lsp` (optional): Array of LSP server command strings
-- `langConfig` (optional): Language-specific configuration
-  - `comments`: Comment configuration
-    - `lineComment`: Line comment token
-    - `blockComment`: `[start, end]` block comment delimiters
-  - `brackets`: Array of `[open, close]` bracket pairs
-  - `autoClosingPairs`: Array of `{open, close}` auto-closing pairs
+Array of target language IDs. Use `"*"` to match all languages.
+
+#### `condition` (optional)
+
+Conditions for applying this rule.
+
+- `when` (optional): Shell command that must return exit code 0 to enable the rule (e.g., `"npm ls biome"`)
+- `whenNot` (optional): Shell command that must return exit code 0 to disable the rule (e.g., `"grep vite-plus package.json"`)
+
+#### `action` (required)
+
+Actions applied when the rule is active.
+
+- `formatter` (optional): Formatter command string. Supports `${filePath}` variable substitution (e.g., `"npx prettier --stdin-filepath ${filePath}"`)
+- `lsp` (optional): LSP server command string (e.g., `"npx biome lsp-proxy"`)
 
 ## Commands
 
@@ -118,4 +121,4 @@ Each rule defines conditions (`when`) and actions (`use`):
 
 **Command ID**: `customLanguageTools.restartAll`
 
-Restarts all language services (formatters, LSP servers, language configurations).
+Restarts all language services (formatters, LSP servers).
