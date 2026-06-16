@@ -9,16 +9,16 @@ export function registerFormatter(
   command: string,
   ruleName: string,
 ): vscode.Disposable {
-  Logger.info(`${ruleName} - Formatter registering`);
+  Logger.debug(`${ruleName} - Formatter registering`);
   const fullDisposable = registerFullFormatter(langs, command);
   const rangeDisposable = registerRangeFormatter(langs, command);
-  Logger.info(`${ruleName} - Formatter registered`);
+  Logger.debug(`${ruleName} - Formatter registered`);
 
   return new vscode.Disposable(() => {
-    Logger.info(`${ruleName} - Formatter unregistering`);
+    Logger.debug(`${ruleName} - Formatter unregistering`);
     fullDisposable.dispose();
     rangeDisposable.dispose();
-    Logger.info(`${ruleName} - Formatter unregistered`);
+    Logger.debug(`${ruleName} - Formatter unregistered`);
   });
 }
 

@@ -56,13 +56,13 @@ export async function registerLsp(
     }
   });
 
-  Logger.info(`${ruleName} - LSP registering`);
+  Logger.debug(`${ruleName} - LSP registering`);
   await client.start();
-  Logger.info(`${ruleName} - LSP registered`);
+  Logger.debug(`${ruleName} - LSP registered`);
 
   return new vscode.Disposable(async () => {
-    Logger.info(`${ruleName} - LSP unregistering`);
+    Logger.debug(`${ruleName} - LSP unregistering`);
     await client.stop();
-    Logger.info(`${ruleName} - LSP unregistered`);
+    Logger.debug(`${ruleName} - LSP unregistered`);
   });
 }

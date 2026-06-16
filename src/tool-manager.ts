@@ -18,6 +18,7 @@ export class ToolManager {
   oldRuleContexts: RuleContext[] = [];
 
   syncRules(): void {
+    Logger.debug("Syncing rules...");
     const { rules } = getConfig();
     this.oldRuleContexts = [...this.ruleContexts];
 
@@ -37,6 +38,7 @@ export class ToolManager {
   }
 
   async syncConditions(): Promise<void> {
+    Logger.debug("Syncing conditions...");
     const workspaceFolders = vscode.workspace.workspaceFolders;
     const isWorkspaceEmpty = !workspaceFolders || workspaceFolders.length === 0;
     if (isWorkspaceEmpty) {
@@ -70,7 +72,7 @@ export class ToolManager {
   }
 
   async syncServices(): Promise<void> {
-    Logger.info("Syncing services...");
+    Logger.debug("Syncing services...");
 
     await this.syncConditions();
 
@@ -109,7 +111,7 @@ export class ToolManager {
     );
 
     Logger.info(
-      `Unregistered services (${[...staleServices, ...notMatchedServices].map((ctx) => ctx.rule.name).join(", ")})`,
+      `Unregistered services: [${[...staleServices, ...notMatchedServices].map((ctx) => ctx.rule.name).join(", ")}]`,
     );
     Logger.info(`Registered services: [${newServices.map((ctx) => ctx.rule.name).join(", ")}]`);
     Logger.info(`Keeped services: [${keepServices.map((ctx) => ctx.rule.name).join(", ")}]`);
