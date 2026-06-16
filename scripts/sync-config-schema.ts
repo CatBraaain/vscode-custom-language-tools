@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
-import { ConfigSchema } from "../src/config-schema";
+import { ConfigSchema } from "../src/config";
 
 const packageJsonConfiguration = {
   title: "Custom Language Tools",

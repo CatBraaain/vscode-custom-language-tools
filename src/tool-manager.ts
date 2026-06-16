@@ -1,8 +1,7 @@
 import { execa, Result, ExecaError } from "execa";
 import * as vscode from "vscode";
 
-import { getConfig } from "./config";
-import { Rule } from "./config-schema";
+import { getConfig, Rule } from "./config";
 import { registerFormatter } from "./formatter";
 import { Logger } from "./logger";
 import { registerLsp } from "./lsp";
