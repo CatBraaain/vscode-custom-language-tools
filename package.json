@@ -60,6 +60,7 @@
       "title": "Custom Language Tools",
       "properties": {
         "customLanguageTools.rules": {
+          "default": [],
           "description": "Rule-based configuration",
           "type": "array",
           "items": {
@@ -69,12 +70,34 @@
                 "type": "string",
                 "description": "Name for this rule"
               },
-              "langs": {
+              "document": {
                 "type": "array",
                 "items": {
-                  "type": "string"
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "language": {
+                          "type": "string"
+                        },
+                        "scheme": {
+                          "type": "string"
+                        },
+                        "pattern": {
+                          "type": "string"
+                        },
+                        "notebook": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  ]
                 },
-                "description": "Language IDs. '*' matches all languages"
+                "description": "Document selector. Can be a language ID string or a DocumentFilter object. '*' matches all languages"
               },
               "condition": {
                 "default": {},
@@ -110,7 +133,7 @@
             },
             "required": [
               "name",
-              "langs",
+              "document",
               "action"
             ],
             "additionalProperties": false
