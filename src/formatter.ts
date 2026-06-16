@@ -54,9 +54,14 @@ async function formatDocument(
   _token: vscode.CancellationToken,
 ): Promise<vscode.TextEdit[]> {
   const resolvedCommand = command.replace("${filePath}", document.fileName);
+  // when edit files outside of workspace, use the first workspace
+  const cwd =
+    vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath ??
+    vscode.workspace.workspaceFolders?.at(0)?.uri.fsPath;
   const res = await execa({
     input: document.getText(range),
     shell: true,
+    cwd,
     reject: false,
   })`${resolvedCommand}`;
 
