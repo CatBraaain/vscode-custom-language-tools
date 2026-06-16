@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
-import { ToolManager } from "./tool-manager";
 import { Logger } from "./logger";
+import { ToolManager } from "./tool-manager";
 
 export async function activate(context: vscode.ExtensionContext) {
   Logger.info("Activating...");

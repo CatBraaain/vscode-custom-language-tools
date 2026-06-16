@@ -1,10 +1,11 @@
-import * as vscode from "vscode";
 import { execa, Result, ExecaError } from "execa";
-import { registerLsp } from "./lsp";
+import * as vscode from "vscode";
+
+import { getConfig } from "./config";
+import { Rule } from "./config-schema";
 import { registerFormatter } from "./formatter";
 import { Logger } from "./logger";
-import { Rule } from "./config-schema";
-import { getConfig } from "./config";
+import { registerLsp } from "./lsp";
 
 type RuleContext = {
   rule: Rule;

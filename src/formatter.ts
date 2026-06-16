@@ -1,5 +1,4 @@
 import { execa } from "execa";
-
 import * as vscode from "vscode";
 
 import { Logger } from "./logger";
