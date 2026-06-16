@@ -43,7 +43,7 @@ export async function registerLsp(
           } else {
             return {
               action: CloseAction.DoNotRestart,
-              message: `${command}: server closed unexpectedly after ${restartCount} retries`,
+              message: `${command}: server closed unexpectedly after ${MAX_RESTART} retries`,
             };
           }
         },
