@@ -1,7 +1,8 @@
 import { execa, Result, ExecaError } from "execa";
 import * as vscode from "vscode";
+import { z } from "zod";
 
-import { getConfig, Rule } from "./config";
+import { RuleSchema, Rule } from "./config";
 import { registerFormatter } from "./formatter";
 import { Logger } from "./logger";
 import { registerLsp } from "./lsp";
@@ -17,9 +18,18 @@ export class ToolManager {
   ruleContexts: RuleContext[] = [];
   oldRuleContexts: RuleContext[] = [];
 
-  syncRules(): void {
+  public static getConfig(): { rules: Rule[] } {
+    const config = vscode.workspace.getConfiguration("customLanguageTools");
+    const result = z.array(RuleSchema).safeParse(config.get("rules") ?? []);
+    if (!result.success) {
+      vscode.window.showErrorMessage(`Failed to parse configuration: ${result.error.message}`);
+    }
+    return { rules: result.data ?? [] };
+  }
+
+  public syncRules(): void {
     Logger.debug("Syncing rules...");
-    const { rules } = getConfig();
+    const { rules } = ToolManager.getConfig();
     this.oldRuleContexts = [...this.ruleContexts];
 
     this.ruleContexts = rules.map((rule) => {
@@ -37,7 +47,7 @@ export class ToolManager {
     Logger.info(`  [${this.ruleContexts.map((ctx) => ctx.rule.name).join(", ")}]`);
   }
 
-  async syncConditions(): Promise<void> {
+  public async syncConditions(): Promise<void> {
     Logger.debug("Syncing conditions...");
     const workspaceFolders = vscode.workspace.workspaceFolders;
     const isWorkspaceEmpty = !workspaceFolders || workspaceFolders.length === 0;
@@ -71,7 +81,7 @@ export class ToolManager {
     Logger.info(`  unmatched: [${unmatchedRuleNames.join(", ")}]`);
   }
 
-  async syncServices(): Promise<void> {
+  public async syncServices(): Promise<void> {
     Logger.debug("Syncing services...");
 
     await this.syncConditions();
@@ -117,7 +127,7 @@ export class ToolManager {
     Logger.info(`Keeped services: [${keepServices.map((ctx) => ctx.rule.name).join(", ")}]`);
   }
 
-  async unregisterAll(): Promise<void> {
+  public async unregisterAll(): Promise<void> {
     Logger.info(`Unregistering all`);
 
     this.ruleContexts.forEach((ctx) => {
@@ -131,7 +141,7 @@ export class ToolManager {
   }
 }
 
-export async function isConditionSatisfied(rule: Rule, workspacePath: string): Promise<boolean> {
+async function isConditionSatisfied(rule: Rule, workspacePath: string): Promise<boolean> {
   const { when, whenNot } = rule.condition;
   const isWhenSatisfied = !when || (await executeCommand(when, workspacePath)).exitCode === 0;
   const isWhenNotSatisfied =

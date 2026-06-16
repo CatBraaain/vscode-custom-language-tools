@@ -3,7 +3,7 @@ import * as assert from "node:assert";
 import { describe, afterEach, test } from "mocha";
 import * as vscode from "vscode";
 
-import { getConfig } from "../../src/config";
+import { ToolManager } from "../../src/tool-manager";
 
 describe("getConfig", () => {
   const cfg = () => vscode.workspace.getConfiguration("customLanguageTools");
@@ -14,7 +14,7 @@ describe("getConfig", () => {
 
   test("getConfig returns empty rules when not set", async () => {
     await cfg().update("rules", undefined, vscode.ConfigurationTarget.Workspace);
-    const config = getConfig();
+    const config = ToolManager.getConfig();
     assert.deepStrictEqual(config.rules, []);
   });
 
@@ -30,7 +30,7 @@ describe("getConfig", () => {
       ],
       vscode.ConfigurationTarget.Workspace,
     );
-    const config = getConfig();
+    const config = ToolManager.getConfig();
     assert.strictEqual(config.rules.length, 1);
     assert.deepStrictEqual(config.rules[0].document, [
       "javascript",
@@ -53,7 +53,7 @@ describe("getConfig", () => {
       ],
       vscode.ConfigurationTarget.Workspace,
     );
-    const fallbackConfig = getConfig();
+    const fallbackConfig = ToolManager.getConfig();
     assert.deepEqual(fallbackConfig.rules, []);
   });
 });

@@ -1,14 +1,4 @@
-import * as vscode from "vscode";
 import { z } from "zod";
-
-export function getConfig(): { rules: Rule[] } {
-  const config = vscode.workspace.getConfiguration("customLanguageTools");
-  const result = z.array(RuleSchema).safeParse(config.get("rules") ?? []);
-  if (!result.success) {
-    vscode.window.showErrorMessage(`Failed to parse configuration: ${result.error.message}`);
-  }
-  return { rules: result.data ?? [] };
-}
 
 const DocumentFilterSchema = z.object({
   language: z.string().optional(),
