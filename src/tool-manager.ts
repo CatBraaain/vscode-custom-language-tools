@@ -113,10 +113,11 @@ export class ToolManager {
 
     await Promise.all(
       newServices.map(async (ctx) => {
-        const services: vscode.Disposable[] = [];
-        if (ctx.rule.action.lsp) {
-          services.push(await registerLsp(ctx.rule.document, ctx.rule.action.lsp, ctx.rule.name));
-        }
+        const services: vscode.Disposable[] = await Promise.all(
+          (ctx.rule.action.lsp ?? []).map((lspCommand) =>
+            registerLsp(ctx.rule.document, lspCommand, ctx.rule.name),
+          ),
+        );
         ctx.service = vscode.Disposable.from(...services);
       }),
     );
@@ -147,9 +148,16 @@ export class ToolManager {
 
 async function isConditionSatisfied(rule: Rule, workspacePath: string): Promise<boolean> {
   const { when, whenNot } = rule.condition;
-  const isWhenSatisfied = !when || (await executeCommand(when, workspacePath)).exitCode === 0;
+  const isWhenSatisfied =
+    !when ||
+    (await Promise.all(when.map(async (cmd) => await executeCommand(cmd, workspacePath)))).every(
+      (res) => res.exitCode === 0,
+    );
   const isWhenNotSatisfied =
-    !whenNot || (await executeCommand(whenNot, workspacePath)).exitCode === 1;
+    !whenNot ||
+    (await Promise.all(whenNot.map(async (cmd) => await executeCommand(cmd, workspacePath)))).every(
+      (res) => res.exitCode === 1,
+    );
 
   const isSatisfied = isWhenSatisfied && isWhenNotSatisfied;
   return isSatisfied;

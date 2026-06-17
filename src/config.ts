@@ -7,6 +7,10 @@ const DocumentFilterSchema = z.object({
   notebook: z.string().optional(),
 });
 
+const CommandInputSchema = z
+  .union([z.string(), z.array(z.string())])
+  .transform((val) => (Array.isArray(val) ? val : [val]));
+
 export const RuleSchema = z.object({
   name: z.string().describe("Name for this rule"),
   document: z
@@ -16,29 +20,24 @@ export const RuleSchema = z.object({
     ),
   condition: z
     .object({
-      when: z
-        .string()
-        .optional()
-        .describe("Command returning exit code 0 to enable rule. (.e.g, 'npm ls biome')"),
-      whenNot: z
-        .string()
-        .optional()
-        .describe(
-          "Command returning exit code 0 to disable rule. (.e.g, 'grep vite-plus package.json')",
-        ),
+      when: CommandInputSchema.optional().describe(
+        "Command(s) returning exit code 0 to enable rule. (.e.g, 'npm ls biome')",
+      ),
+      whenNot: CommandInputSchema.optional().describe(
+        "Command(s) returning exit code 1 to enable rule. (.e.g, 'grep vite-plus package.json')",
+      ),
     })
     .optional()
     .default({})
     .describe("Conditions for applying this rule"),
   action: z
     .object({
-      lsp: z.string().optional().describe("LSP server commands. (.e.g, 'npx biome lsp-proxy')"),
-      formatter: z
-        .string()
-        .optional()
-        .describe(
-          "Formatter commands. Allows ${filePath} variable. (.e.g, 'npx biome format --stdin-file-path=${filePath}')",
-        ),
+      lsp: CommandInputSchema.optional().describe(
+        "LSP server command(s). (.e.g, 'npx biome lsp-proxy')",
+      ),
+      formatter: CommandInputSchema.optional().describe(
+        "Formatter command(s). Allows ${filePath} variable. (.e.g, 'npx biome format --stdin-file-path=${filePath}')",
+      ),
     })
     .describe("Actions applied when rule is active"),
 });

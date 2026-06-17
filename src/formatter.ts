@@ -67,10 +67,10 @@ async function formatDocument(
     )
     .map((ctx) => ctx.rule);
 
-  Logger.debug(`Matched formatters: [${matchedRules.map((r) => r.name).join(", ")}]`);
+  Logger.debug(`Matched formatter rules: [${matchedRules.map((r) => r.name).join(", ")}]`);
 
-  const commands = matchedRules.map((rule) =>
-    rule.action.formatter!.replace("${filePath}", document.fileName),
+  const commands = matchedRules.flatMap((rule) =>
+    rule.action.formatter!.map((formatter) => formatter.replace("${filePath}", document.fileName)),
   );
   // when edit files outside of workspace, use the first workspace
   const cwd =

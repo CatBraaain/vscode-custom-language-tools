@@ -60,7 +60,6 @@
       "title": "Custom Language Tools",
       "properties": {
         "customLanguageTools.rules": {
-          "default": [],
           "description": "Rule-based configuration",
           "type": "array",
           "items": {
@@ -100,17 +99,36 @@
                 "description": "Document selector. Can be a language ID string or a DocumentFilter object. '*' matches all languages"
               },
               "condition": {
-                "default": {},
                 "description": "Conditions for applying this rule",
                 "type": "object",
                 "properties": {
                   "when": {
-                    "description": "Command returning exit code 0 to enable rule. (.e.g, 'npm ls biome')",
-                    "type": "string"
+                    "description": "Command(s) returning exit code 0 to enable rule. (.e.g, 'npm ls biome')",
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
                   },
                   "whenNot": {
-                    "description": "Command returning exit code 0 to disable rule. (.e.g, 'grep vite-plus package.json')",
-                    "type": "string"
+                    "description": "Command(s) returning exit code 1 to enable rule. (.e.g, 'grep vite-plus package.json')",
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
                   }
                 },
                 "additionalProperties": false
@@ -119,12 +137,32 @@
                 "type": "object",
                 "properties": {
                   "lsp": {
-                    "description": "LSP server commands. (.e.g, 'npx biome lsp-proxy')",
-                    "type": "string"
+                    "description": "LSP server command(s). (.e.g, 'npx biome lsp-proxy')",
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
                   },
                   "formatter": {
-                    "description": "Formatter commands. Allows ${filePath} variable. (.e.g, 'npx biome format --stdin-file-path=${filePath}')",
-                    "type": "string"
+                    "description": "Formatter command(s). Allows ${filePath} variable. (.e.g, 'npx biome format --stdin-file-path=${filePath}')",
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
                   }
                 },
                 "description": "Actions applied when rule is active",

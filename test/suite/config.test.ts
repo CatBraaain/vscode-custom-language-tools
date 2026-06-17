@@ -36,10 +36,9 @@ describe("getConfig", () => {
       "javascript",
       { language: "json", pattern: "**/package.json" },
     ]);
-    assert.deepStrictEqual(
-      config.rules[0].action.formatter,
+    assert.deepStrictEqual(config.rules[0].action.formatter, [
       "prettier --stdin-filepath ${filePath}",
-    );
+    ]);
   });
 
   test("getConfig returns empty rules on invalid rule schema", async () => {
