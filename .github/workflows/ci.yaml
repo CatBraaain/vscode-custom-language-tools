@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches-ignore:
+      - "renovate/**"
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  vscode-version:
+    runs-on: ubuntu-24.04
+    outputs:
+      vscode-version: ${{ steps.vscode.outputs.version }}
+    steps:
+      - name: Find VSCode latest version
+        id: vscode
+        run: |
+          echo "version=$(curl -s https://update.code.visualstudio.com/api/releases/stable | jq -r '.[0]')" >> "$GITHUB_OUTPUT"
+
+  ci:
+    needs: vscode-version
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/cache@v4
+        with:
+          path: .vscode-test
+          key: vscode-${{ needs.vscode-version.outputs.vscode-version }}
+      - uses: oven-sh/setup-bun@v2
+      - run: bun i
+      - run: bun run check
+      - run: xvfb-run -a xvfb-run -a bun run test
+        if: runner.os == 'Linux'
+      - run: bun run test
+        if: runner.os != 'Linux'

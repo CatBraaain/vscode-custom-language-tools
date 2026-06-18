@@ -1,0 +1,33 @@
+name: Generate Release Note
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+env:
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  release_note:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run pack
+      - name: Install parse-changelog
+        uses: taiki-e/install-action@v2
+        with:
+          tool: parse-changelog
+      - name: Create GitHub Release
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          version="${GITHUB_REF_NAME#v}"
+          gh release create "$tag" \
+            dist/custom-language-tools.vsix \
+            --notes "$(parse-changelog CHANGELOG.md "$version")" \
+            --title "$tag"
