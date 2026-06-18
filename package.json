@@ -33,7 +33,7 @@
     "check:config-schema": "bun run scripts/sync-config-schema.ts && git diff --exit-code package.json",
     "install-extension": "bun run pack && code --install-extension dist/custom-language-tools.vsix --force",
     "pack": "bun run build && vsce pack --allow-star-activation --out dist/custom-language-tools.vsix",
-    "publish": "bun run build && vsce publish --azure-credential --allow-star-activation",
+    "publish": "az login --use-device-code && bun run build && vsce publish --azure-credential --allow-star-activation",
     "test": "bun run build && bun run build:test && vscode-test"
   },
   "dependencies": {
