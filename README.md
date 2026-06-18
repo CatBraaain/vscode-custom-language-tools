@@ -7,12 +7,19 @@ A unified VSCode extension for configuring custom language settings, formatters,
 ### Custom Formatters
 
 - Register custom formatters for any language
+- Multiple formatters can be applied sequentially to the same document
 - Conditional formatting based on shell command execution results
 
-### Custom LSP Config
+### Custom LSPs
 
 - Multiple language server management
 - Dynamic server registration based on workspace conditions
+
+### Rule-Based Configuration
+
+- Flexible rule system with document selectors
+- Conditional activation based on shell commands
+- Support for multiple commands per action
 
 ## Configuration
 
@@ -23,8 +30,7 @@ The extension uses a rule-based configuration system. Add rules to your settings
 Before using this example, uninstall conflicting extensions and install the ESLint language server:
 
 ```sh
-code --uninstall-extension esbenp.prettier-vscode
-code --uninstall-extension dbaeumer.vscode-eslint
+code --uninstall-extension charliermarsh.ruff
 code --uninstall-extension oxc.oxc-vscode
 code --uninstall-extension biomejs.biome
 
@@ -35,30 +41,18 @@ npm i -g vscode-langservers-extracted
 {
   "customLanguageTools.rules": [
     {
-      "name": "Prettier",
-      "langs": ["javascript", "typescript"],
-      "condition": {
-        "when": "npm ls prettier"
-      },
+      "name": "Python",
+      "document": ["python"],
       "action": {
-        "formatter": "npx prettier --stdin-filepath ${filePath}"
-      }
-    },
-    {
-      "name": "ESLint",
-      "langs": ["javascript", "typescript"],
-      "condition": {
-        "when": "npm ls eslint"
-      },
-      "action": {
-        "lsp": "vscode-eslint-language-server --stdio"
+        "formatter": "uvx ruff check - --fix --unfixable F401",
+        "lsp": ["uvx ruff server", "uvx ty server"]
       }
     },
     {
       "name": "Biome",
-      "langs": ["javascript", "typescript"],
+      "document": ["javascript", "typescript"],
       "condition": {
-        "when": "npm ls @biomejs/biome"
+        "when": "grep \"\\\"@biomejs/biome\\\":\" package.json"
       },
       "action": {
         "formatter": "npx @biomejs/biome format --stdin-file-path=${filePath}",
@@ -67,9 +61,9 @@ npm i -g vscode-langservers-extracted
     },
     {
       "name": "VitePlus",
-      "langs": ["javascript", "typescript"],
+      "document": ["javascript", "typescript"],
       "condition": {
-        "when": "npm ls vite-plus"
+        "when": "grep \"\\\"vite-plus\\\":\" package.json"
       },
       "action": {
         "formatter": "vp fmt --stdin-filepath=${filePath}",
@@ -78,9 +72,12 @@ npm i -g vscode-langservers-extracted
     },
     {
       "name": "Oxc",
-      "langs": ["javascript", "typescript"],
+      "document": ["javascript", "typescript"],
       "condition": {
-        "whenNot": "npm ls prettier eslint @biomejs/biome vite-plus"
+        "whenNot": [
+          "grep \"\\\"@biomejs/biome\\\":\" package.json",
+          "grep \"\\\"vite-plus\\\":\" package.json"
+        ]
       },
       "action": {
         "formatter": "npx oxfmt --stdin-filepath=${filePath}",
@@ -97,23 +94,23 @@ npm i -g vscode-langservers-extracted
 
 Name for this rule.
 
-#### `langs` (required)
+#### `document` (required)
 
-Array of target language IDs. Use `"*"` to match all languages.
+Array of target language IDs or [DocumentFilter](https://code.visualstudio.com/api/references/vscode-api#DocumentFilter) objects. Use `"*"` to match all languages.
 
 #### `condition` (optional)
 
 Conditions for applying this rule.
 
-- `when` (optional): Shell command that must return exit code 0 to enable the rule (e.g., `"npm ls biome"`)
-- `whenNot` (optional): Shell command that must return exit code 0 to disable the rule (e.g., `"grep vite-plus package.json"`)
+- `when` (optional): Shell command(s) that must return exit code 0 to enable the rule (e.g., `"npm ls biome"`)
+- `whenNot` (optional): Shell command(s) that must return exit code 0 to disable the rule (e.g., `"grep vite-plus package.json"`)
 
 #### `action` (required)
 
 Actions applied when the rule is active.
 
-- `formatter` (optional): Formatter command string. Supports `${filePath}` variable substitution (e.g., `"npx prettier --stdin-filepath ${filePath}"`)
-- `lsp` (optional): LSP server command string (e.g., `"npx biome lsp-proxy"`)
+- `formatter` (optional): Formatter command(s). Supports `${filePath}` variable substitution (e.g., `"npx prettier --stdin-filepath ${filePath}"`)
+- `lsp` (optional): LSP server command(s) (e.g., `"npx biome lsp-proxy"`)
 
 ## Commands
 
@@ -122,3 +119,9 @@ Actions applied when the rule is active.
 **Command ID**: `customLanguageTools.restartAll`
 
 Restarts all language services (formatters, LSP servers).
+
+## Related Projects
+
+https://github.com/JKillian/vscode-custom-local-formatters
+https://github.com/pepebecker/vscode-lsp-config
+https://github.com/ArturoDent/custom-language-properties
