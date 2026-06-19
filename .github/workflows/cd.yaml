@@ -6,17 +6,56 @@ on:
       - "v*.*.*"
 
 permissions:
-  id-token: write
-  contents: read
+  contents: write
+
+env:
+  GH_TOKEN: ${{ github.token }}
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      # Setup
       - uses: actions/checkout@v6
-        with:
-          ref: ${{ github.ref_name }}
       - uses: oven-sh/setup-bun@v2
-      - run: bun install
+      - name: Install parse-changelog
+        uses: taiki-e/install-action@v2
+        with:
+          tool: parse-changelog
+      - name: Prepare
+        id: prepare
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          version="${tag#v}"
+          notes=$(parse-changelog CHANGELOG.md "$version")
+
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          {
+            echo "notes<<EOF"
+            echo "$notes"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      # Check
+      - name: Check package.json
+        run: |
+          package_json_version=$(jq -r .version package.json)
+          if [ "${{ steps.prepare.outputs.version }}" != "$package_json_version" ]; then
+            echo "package.json version mismatch ${{ steps.prepare.outputs.version }} != $package_json_version"
+            exit 1
+          fi
+
+      # Publish
+      - run: bun install --frozen-lockfile
       - run: bun run build
       - run: bun run vsce publish --allow-star-activation -p ${{ secrets.VSCE_PAT }}
+
+      # Release
+      - run: bun run pack
+      - name: Create GitHub Release
+        run: |
+          gh release create "${{ steps.prepare.outputs.tag }}" \
+            dist/custom-language-tools.vsix \
+            --notes "${{ steps.prepare.outputs.notes }}" \
+            --title "${{ steps.prepare.outputs.tag }}"
