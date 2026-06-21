@@ -122,6 +122,6 @@ Restarts all language services (formatters, LSP servers).
 
 ## Related Projects
 
-https://github.com/JKillian/vscode-custom-local-formatters
-https://github.com/pepebecker/vscode-lsp-config
-https://github.com/ArturoDent/custom-language-properties
+- https://github.com/JKillian/vscode-custom-local-formatters
+- https://github.com/pepebecker/vscode-lsp-config
+- https://github.com/ArturoDent/custom-language-properties
