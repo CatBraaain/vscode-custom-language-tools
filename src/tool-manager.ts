@@ -156,7 +156,7 @@ async function isConditionSatisfied(rule: Rule, workspacePath: string): Promise<
   const isWhenNotSatisfied =
     !whenNot ||
     (await Promise.all(whenNot.map(async (cmd) => await executeCommand(cmd, workspacePath)))).every(
-      (res) => res.exitCode === 1,
+      (res) => res.exitCode !== 0,
     );
 
   const isSatisfied = isWhenSatisfied && isWhenNotSatisfied;
