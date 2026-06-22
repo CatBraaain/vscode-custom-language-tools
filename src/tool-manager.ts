@@ -14,6 +14,9 @@ type RuleContext = {
   conditionMatched?: boolean;
 };
 
+type Results = Record<string, Result | ExecaError>;
+type ResultsMap = Record<string, Results>;
+
 export class ToolManager {
   ruleContexts: RuleContext[] = [];
   oldRuleContexts: RuleContext[] = [];
@@ -60,16 +63,41 @@ export class ToolManager {
     }
 
     const workspacePaths = workspaceFolders.map((w) => w.uri.fsPath);
-    await Promise.all(
-      this.ruleContexts.map(async (ctx) => {
-        const results = await Promise.all(
-          workspacePaths.map(
-            async (workspacePath) => await isConditionSatisfied(ctx.rule, workspacePath),
+
+    const conditionCommands = [
+      ...new Set(
+        this.ruleContexts.flatMap((ctx) => [
+          ...(ctx.rule.condition?.when ?? []),
+          ...(ctx.rule.condition?.whenNot ?? []),
+        ]),
+      ),
+    ];
+    const resultsMap: ResultsMap = Object.fromEntries(
+      await Promise.all(
+        workspacePaths.map(async (workspacePath) => [
+          workspacePath,
+          Object.fromEntries(
+            await Promise.all(
+              conditionCommands.map(async (cmd) => [cmd, await executeCommand(cmd, workspacePath)]),
+            ),
           ),
-        );
-        ctx.conditionMatched = results.some(Boolean);
-      }),
+        ]),
+      ),
     );
+
+    this.ruleContexts.forEach((ctx) => {
+      ctx.conditionMatched = workspacePaths
+        .map((workspacePath) => {
+          const { when, whenNot } = ctx.rule.condition || {};
+          const results = resultsMap[workspacePath]!;
+          const isWhenSatisfied = !when || when.every((cmd) => results[cmd].exitCode === 0);
+          const isWhenNotSatisfied =
+            !whenNot || whenNot.every((cmd) => results[cmd].exitCode !== 0);
+
+          return isWhenSatisfied && isWhenNotSatisfied;
+        })
+        .some(Boolean);
+    });
 
     const matchedRuleNames = this.ruleContexts
       .filter((ctx) => ctx.conditionMatched)
@@ -144,23 +172,6 @@ export class ToolManager {
 
     Logger.info("Unregistered all");
   }
-}
-
-async function isConditionSatisfied(rule: Rule, workspacePath: string): Promise<boolean> {
-  const { when, whenNot } = rule.condition;
-  const isWhenSatisfied =
-    !when ||
-    (await Promise.all(when.map(async (cmd) => await executeCommand(cmd, workspacePath)))).every(
-      (res) => res.exitCode === 0,
-    );
-  const isWhenNotSatisfied =
-    !whenNot ||
-    (await Promise.all(whenNot.map(async (cmd) => await executeCommand(cmd, workspacePath)))).every(
-      (res) => res.exitCode !== 0,
-    );
-
-  const isSatisfied = isWhenSatisfied && isWhenNotSatisfied;
-  return isSatisfied;
 }
 
 async function executeCommand(
