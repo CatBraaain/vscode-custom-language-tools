@@ -3,7 +3,7 @@
   "displayName": "Custom Language Tools",
   "version": "0.0.3",
   "private": true,
-  "description": "",
+  "description": "A unified VSCode extension for configuring custom formatters and LSP servers through rule-based configuration",
   "categories": [
     "Formatters",
     "Linters",
