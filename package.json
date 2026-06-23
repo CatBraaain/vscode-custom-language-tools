@@ -21,7 +21,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/CatBraaain/custom-language-tools"
+    "url": "https://github.com/CatBraaain/vscode-custom-language-tools"
   },
   "publisher": "CatBraaain",
   "type": "module",
