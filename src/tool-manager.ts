@@ -121,27 +121,27 @@ export class ToolManager {
       Logger.info("Registered formatter");
     }
 
-    const staleServices = this.oldRuleContexts.filter(
+    const staleRules = this.oldRuleContexts.filter(
       (oldCtx) =>
         oldCtx.lspClients && !this.ruleContexts.some((newCtx) => newCtx.ruleKey === oldCtx.ruleKey),
     );
-    const notMatchedServices = this.ruleContexts.filter(
+    const unmatchedRules = this.ruleContexts.filter(
       (newCtx) => !newCtx.conditionMatched && newCtx.lspClients,
     );
-    const newServices = this.ruleContexts.filter(
+    const newRules = this.ruleContexts.filter(
       (newCtx) => newCtx.conditionMatched && !newCtx.lspClients,
     );
-    const keepServices = this.ruleContexts.filter(
+    const keepedRules = this.ruleContexts.filter(
       (newCtx) => newCtx.conditionMatched && newCtx.lspClients,
     );
 
-    [...staleServices, ...notMatchedServices].forEach((ctx) => {
+    [...staleRules, ...unmatchedRules].forEach((ctx) => {
       ctx.lspClients?.forEach((client) => client.stop());
       ctx.lspClients = undefined;
     });
 
     await Promise.all(
-      newServices.map(async (ctx) => {
+      newRules.map(async (ctx) => {
         ctx.lspClients = await Promise.all(
           (ctx.rule.action.lsp ?? []).map((lspCommand) =>
             registerLsp(ctx.rule.document, lspCommand, ctx.rule.name),
@@ -151,10 +151,10 @@ export class ToolManager {
     );
 
     Logger.info(
-      `Unregistered services: [${[...staleServices, ...notMatchedServices].map((ctx) => ctx.rule.name).join(", ")}]`,
+      `Unregistered services: [${[...staleRules, ...unmatchedRules].map((ctx) => ctx.rule.name).join(", ")}]`,
     );
-    Logger.info(`Registered services: [${newServices.map((ctx) => ctx.rule.name).join(", ")}]`);
-    Logger.info(`Keeped services: [${keepServices.map((ctx) => ctx.rule.name).join(", ")}]`);
+    Logger.info(`Registered services: [${newRules.map((ctx) => ctx.rule.name).join(", ")}]`);
+    Logger.info(`Keeped services: [${keepedRules.map((ctx) => ctx.rule.name).join(", ")}]`);
   }
 
   public async unregisterAll(): Promise<void> {
