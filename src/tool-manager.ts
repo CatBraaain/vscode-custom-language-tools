@@ -1,5 +1,6 @@
 import { execa, Result, ExecaError } from "execa";
 import * as vscode from "vscode";
+import { LanguageClient } from "vscode-languageclient/node";
 import { z } from "zod";
 
 import { RuleSchema, Rule } from "./config";
@@ -10,7 +11,7 @@ import { registerLsp } from "./lsp";
 type RuleContext = {
   rule: Rule;
   ruleKey: string;
-  service?: vscode.Disposable;
+  lspClients?: LanguageClient[];
   conditionMatched?: boolean;
 };
 
@@ -42,7 +43,7 @@ export class ToolManager {
       return {
         rule,
         ruleKey,
-        service: oldRuleContext?.service,
+        lspClients: oldRuleContext?.lspClients,
         conditionMatched: oldRuleContext?.conditionMatched,
       };
     });
@@ -122,31 +123,30 @@ export class ToolManager {
 
     const staleServices = this.oldRuleContexts.filter(
       (oldCtx) =>
-        oldCtx.service && !this.ruleContexts.some((newCtx) => newCtx.ruleKey === oldCtx.ruleKey),
+        oldCtx.lspClients && !this.ruleContexts.some((newCtx) => newCtx.ruleKey === oldCtx.ruleKey),
     );
     const notMatchedServices = this.ruleContexts.filter(
-      (newCtx) => !newCtx.conditionMatched && newCtx.service,
+      (newCtx) => !newCtx.conditionMatched && newCtx.lspClients,
     );
     const newServices = this.ruleContexts.filter(
-      (newCtx) => newCtx.conditionMatched && !newCtx.service,
+      (newCtx) => newCtx.conditionMatched && !newCtx.lspClients,
     );
     const keepServices = this.ruleContexts.filter(
-      (newCtx) => newCtx.conditionMatched && newCtx.service,
+      (newCtx) => newCtx.conditionMatched && newCtx.lspClients,
     );
 
     [...staleServices, ...notMatchedServices].forEach((ctx) => {
-      ctx.service?.dispose();
-      ctx.service = undefined;
+      ctx.lspClients?.forEach((client) => client.stop());
+      ctx.lspClients = undefined;
     });
 
     await Promise.all(
       newServices.map(async (ctx) => {
-        const services: vscode.Disposable[] = await Promise.all(
+        ctx.lspClients = await Promise.all(
           (ctx.rule.action.lsp ?? []).map((lspCommand) =>
             registerLsp(ctx.rule.document, lspCommand, ctx.rule.name),
           ),
         );
-        ctx.service = vscode.Disposable.from(...services);
       }),
     );
 
@@ -164,8 +164,8 @@ export class ToolManager {
     this.formatterService = undefined;
 
     this.ruleContexts.forEach((ctx) => {
-      ctx.service?.dispose();
-      ctx.service = undefined;
+      ctx.lspClients?.forEach((client) => client.stop());
+      ctx.lspClients = undefined;
     });
     this.ruleContexts = [];
     this.oldRuleContexts = [];
