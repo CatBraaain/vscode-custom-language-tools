@@ -7,14 +7,14 @@ export async function activate(context: vscode.ExtensionContext) {
   Logger.info("Activating...");
 
   const toolManager = new ToolManager();
-  await toolManager.syncRules();
+  toolManager.syncRules();
   await toolManager.syncServices();
 
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration(async (event) => {
       if (event.affectsConfiguration("customLanguageTools.rules")) {
         Logger.debug("onDidChangeConfiguration start");
-        await toolManager.syncRules();
+        toolManager.syncRules();
         await toolManager.syncServices();
         Logger.debug("onDidChangeConfiguration end");
       }
@@ -31,7 +31,7 @@ export async function activate(context: vscode.ExtensionContext) {
     }),
     vscode.commands.registerCommand("customLanguageTools.restartAll", async () => {
       await toolManager.unregisterAll();
-      await toolManager.syncRules();
+      toolManager.syncRules();
       await toolManager.syncServices();
     }),
     new vscode.Disposable(async () => {
