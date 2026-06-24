@@ -1,7 +1,12 @@
 import { execa } from "execa";
 import * as vscode from "vscode";
 import type { LanguageClient, DocumentFormattingParams } from "vscode-languageclient/node";
-import { DocumentFormattingRequest } from "vscode-languageclient/node";
+import {
+  DocumentFormattingRequest,
+  DidChangeTextDocumentNotification,
+  DidChangeTextDocumentParams,
+  TextDocumentChangeRegistrationOptions,
+} from "vscode-languageclient/node";
 
 import { Logger } from "./logger";
 import { ToolManager } from "./tool-manager";
@@ -40,36 +45,36 @@ export class DocumentFormatter {
 
   public async format(): Promise<vscode.TextEdit[]> {
     Logger.info("Format...");
-    const editor = vscode.window.visibleTextEditors.find(
-      (editor) => editor.document === this.document,
+
+    const originalText = this.document.getText();
+    let currentText = originalText;
+
+    const lspContexts = this.toolManager.ruleContexts.filter(
+      (ctx) => ctx.lspClients && vscode.languages.match(ctx.rule.document, this.document),
     );
-    if (editor) {
-      const lspContexts = this.toolManager.ruleContexts.filter(
-        (ctx) => ctx.lspClients && vscode.languages.match(ctx.rule.document, this.document),
-      );
-      for (const ctx of lspContexts) {
-        for (const client of ctx.lspClients!) {
-          const edits = await this.formatWithLsp(client);
-          await editor.edit((builder) => {
-            for (const edit of edits) {
-              builder.replace(edit.range, edit.newText);
-            }
-          });
-        }
+    Logger.info(`Matched lsp rules: [${JSON.stringify(lspContexts.map((ctx) => ctx.rule.name))}]`);
+
+    for (const ctx of lspContexts) {
+      for (const client of ctx.lspClients!) {
+        currentText = await this.formatWithLsp(client, currentText);
+        await this.notifyLSPDidChange(client, currentText);
       }
     }
 
-    const targetRange = this.document.validateRange(
-      new vscode.Range(0, 0, this.document.lineCount, 0),
-    );
-    const newText = await this.formatWithCommand();
+    currentText = await this.formatWithCommand(currentText);
+
     Logger.info("Format finished");
-    return [vscode.TextEdit.replace(targetRange, newText)];
+    if (currentText === originalText) {
+      return [];
+    } else {
+      const fullRange = this.document.validateRange(
+        new vscode.Range(0, 0, this.document.lineCount, 0),
+      );
+      return [new vscode.TextEdit(fullRange, currentText)];
+    }
   }
 
-  private async formatWithLsp(client: LanguageClient): Promise<vscode.TextEdit[]> {
-    Logger.info("Requesting LSP formatting...");
-
+  private async formatWithLsp(client: LanguageClient, currentText: string): Promise<string> {
     const response = await client.sendRequest<vscode.TextEdit[] | null>(
       DocumentFormattingRequest.method,
       {
@@ -93,10 +98,62 @@ export class DocumentFormatter {
     );
 
     Logger.debug(`LSP returned ${edits.length} edit(s)`);
-    return edits;
+    return this.getEditedText(currentText, edits);
   }
 
-  private async formatWithCommand(): Promise<string> {
+  private getEditedText(text: string, edits: vscode.TextEdit[]): string {
+    const chunks: string[] = [];
+
+    const sorted = edits
+      .map((e) => ({
+        start: this.getOffsetFromPosition(text, e.range.start),
+        end: this.getOffsetFromPosition(text, e.range.end),
+        text: e.newText,
+      }))
+      .sort((a, b) => a.start - b.start);
+
+    let lastIndex = 0;
+    for (const e of sorted) {
+      chunks.push(text.slice(lastIndex, e.start));
+      chunks.push(e.text);
+      lastIndex = e.end;
+    }
+    chunks.push(text.slice(lastIndex));
+
+    return chunks.join("");
+  }
+
+  private getOffsetFromPosition(text: string, position: vscode.Position): number {
+    const lines = text.split("\n");
+    let offset = 0;
+    for (let i = 0; i < position.line; i++) {
+      offset += lines[i].length + 1;
+    }
+    offset += position.character;
+    return offset;
+  }
+
+  private async notifyLSPDidChange(client: LanguageClient, newText: string): Promise<void> {
+    await client.sendNotification(DidChangeTextDocumentNotification.method, {
+      textDocument: {
+        uri: this.document.uri.toString(),
+        version: this.document.version,
+      },
+      contentChanges: [
+        {
+          range: {
+            start: { line: 0, character: 0 },
+            end: { line: this.document.lineCount, character: 0 },
+          },
+          rangeLength: this.document.getText().length,
+          text: newText,
+        },
+      ],
+    } satisfies DidChangeTextDocumentParams);
+    Logger.debug(`Sent didChange notification to LSP server`);
+  }
+
+  private async formatWithCommand(inputText: string): Promise<string> {
     const matchedRules = this.toolManager.ruleContexts
       .filter(
         (ctx) =>
@@ -122,7 +179,7 @@ export class DocumentFormatter {
     Logger.info(`  commands: [${commands.join(", ")}]`);
     Logger.info(`  cwd: ${cwd}`);
 
-    let currentText = this.document.getText();
+    let currentText = inputText;
 
     for (const command of commands) {
       const res = await execa({
