@@ -1,14 +1,7 @@
 import { execa } from "execa";
 import * as vscode from "vscode";
-import type {
-  LanguageClient,
-  DocumentFormattingParams,
-  DocumentRangeFormattingParams,
-} from "vscode-languageclient/node";
-import {
-  DocumentFormattingRequest,
-  DocumentRangeFormattingRequest,
-} from "vscode-languageclient/node";
+import type { LanguageClient, DocumentFormattingParams } from "vscode-languageclient/node";
+import { DocumentFormattingRequest } from "vscode-languageclient/node";
 
 import { Logger } from "./logger";
 import { ToolManager } from "./tool-manager";
@@ -18,23 +11,7 @@ export function registerFormatter(
   toolManager: ToolManager,
 ): vscode.Disposable {
   Logger.debug("Formatter registering");
-  const fullDisposable = registerFullFormatter(document, toolManager);
-  const rangeDisposable = registerRangeFormatter(document, toolManager);
-  Logger.debug("Formatter registered");
-
-  return new vscode.Disposable(() => {
-    Logger.debug("Formatter unregistering");
-    fullDisposable.dispose();
-    rangeDisposable.dispose();
-    Logger.debug("Formatter unregistered");
-  });
-}
-
-function registerFullFormatter(
-  document: vscode.DocumentSelector,
-  toolManager: ToolManager,
-): vscode.Disposable {
-  return vscode.languages.registerDocumentFormattingEditProvider(document, {
+  const formatService = vscode.languages.registerDocumentFormattingEditProvider(document, {
     provideDocumentFormattingEdits(
       document: vscode.TextDocument,
       options: vscode.FormattingOptions,
@@ -44,23 +21,13 @@ function registerFullFormatter(
       return formatter.format();
     },
   } satisfies vscode.DocumentFormattingEditProvider);
-}
+  Logger.debug("Formatter registered");
 
-function registerRangeFormatter(
-  document: vscode.DocumentSelector,
-  toolManager: ToolManager,
-): vscode.Disposable {
-  return vscode.languages.registerDocumentRangeFormattingEditProvider(document, {
-    provideDocumentRangeFormattingEdits(
-      document: vscode.TextDocument,
-      range: vscode.Range,
-      options: vscode.FormattingOptions,
-      token: vscode.CancellationToken,
-    ): vscode.ProviderResult<vscode.TextEdit[]> {
-      const formatter = new DocumentFormatter(toolManager, document, options, token);
-      return formatter.format(range);
-    },
-  } satisfies vscode.DocumentRangeFormattingEditProvider);
+  return new vscode.Disposable(() => {
+    Logger.debug("Formatter unregistering");
+    formatService.dispose();
+    Logger.debug("Formatter unregistered");
+  });
 }
 
 export class DocumentFormatter {
@@ -71,7 +38,7 @@ export class DocumentFormatter {
     private token: vscode.CancellationToken,
   ) {}
 
-  public async format(range?: vscode.Range): Promise<vscode.TextEdit[]> {
+  public async format(): Promise<vscode.TextEdit[]> {
     Logger.info("Format...");
     const editor = vscode.window.visibleTextEditors.find(
       (editor) => editor.document === this.document,
@@ -82,7 +49,7 @@ export class DocumentFormatter {
       );
       for (const ctx of lspContexts) {
         for (const client of ctx.lspClients!) {
-          const edits = await this.formatWithLsp(client, range);
+          const edits = await this.formatWithLsp(client);
           await editor.edit((builder) => {
             for (const edit of edits) {
               builder.replace(edit.range, edit.newText);
@@ -92,29 +59,26 @@ export class DocumentFormatter {
       }
     }
 
-    const targetRange =
-      range ?? this.document.validateRange(new vscode.Range(0, 0, this.document.lineCount, 0));
-    const newText = await this.formatWithCommand(range);
+    const targetRange = this.document.validateRange(
+      new vscode.Range(0, 0, this.document.lineCount, 0),
+    );
+    const newText = await this.formatWithCommand();
     Logger.info("Format finished");
     return [vscode.TextEdit.replace(targetRange, newText)];
   }
 
-  private async formatWithLsp(
-    client: LanguageClient,
-    range?: vscode.Range,
-  ): Promise<vscode.TextEdit[]> {
+  private async formatWithLsp(client: LanguageClient): Promise<vscode.TextEdit[]> {
     Logger.info("Requesting LSP formatting...");
 
     const response = await client.sendRequest<vscode.TextEdit[] | null>(
-      range ? DocumentRangeFormattingRequest.method : DocumentFormattingRequest.method,
+      DocumentFormattingRequest.method,
       {
         textDocument: { uri: this.document.uri.toString() },
-        range,
         options: {
           tabSize: this.options.tabSize,
           insertSpaces: this.options.insertSpaces,
         },
-      } satisfies DocumentFormattingParams | DocumentRangeFormattingParams,
+      } satisfies DocumentFormattingParams,
       this.token,
     );
     const edits = (response ?? []).map(
@@ -132,7 +96,7 @@ export class DocumentFormatter {
     return edits;
   }
 
-  private async formatWithCommand(range?: vscode.Range): Promise<string> {
+  private async formatWithCommand(): Promise<string> {
     const matchedRules = this.toolManager.ruleContexts
       .filter(
         (ctx) =>
@@ -158,7 +122,7 @@ export class DocumentFormatter {
     Logger.info(`  commands: [${commands.join(", ")}]`);
     Logger.info(`  cwd: ${cwd}`);
 
-    let currentText = this.document.getText(range);
+    let currentText = this.document.getText();
 
     for (const command of commands) {
       const res = await execa({
