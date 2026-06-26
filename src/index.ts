@@ -25,9 +25,9 @@ export async function activate(context: vscode.ExtensionContext) {
       Logger.debug("onDidOpenTextDocument end");
     }),
     vscode.workspace.onDidSaveTextDocument(async (_event) => {
-      Logger.debug("onDidOpenTextDocument start");
+      Logger.debug("onDidSaveTextDocument start");
       await toolManager.syncServices();
-      Logger.debug("onDidOpenTextDocument end");
+      Logger.debug("onDidSaveTextDocument end");
     }),
     vscode.commands.registerCommand("customLanguageTools.restartAll", async () => {
       await toolManager.unregisterAll();
