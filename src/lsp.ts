@@ -24,6 +24,9 @@ export async function registerLsp(
   let restartCount = 0;
   const MAX_RESTART = 3;
 
+  const traceOutputChannel = vscode.window.createOutputChannel(`${ruleName} (${command})`, {
+    log: true,
+  });
   const client = new LanguageClient(
     `${ruleName} (${command})`,
     {
@@ -31,6 +34,7 @@ export async function registerLsp(
       args,
     } satisfies Executable,
     {
+      traceOutputChannel,
       documentSelector: document as any,
       errorHandler: {
         error(error, _message, _count) {
@@ -59,16 +63,20 @@ export async function registerLsp(
     }
   });
 
-  Logger.debug(`${ruleName} - LSP registering`);
+  Logger.debug(`${ruleName} (${command}) - LSP registering`);
   await client.start();
   client.getFeature(DocumentFormattingRequest.method)?.clear();
   client.getFeature(DocumentRangeFormattingRequest.method)?.clear();
   client.getFeature(DocumentOnTypeFormattingRequest.method)?.clear();
-  Logger.debug(`${ruleName} - LSP registered`);
   Logger.debug(
-    client.initializeResult?.capabilities.documentFormattingProvider
-      ? "formattable"
-      : "not formattable",
+    `${ruleName} (${command}) - LSP registered - ${
+      client.initializeResult?.capabilities.documentFormattingProvider
+        ? "formattable"
+        : "not formattable"
+    }`,
+  );
+  Logger.debug(
+    `${ruleName} (${command}) - LSP registered - ${JSON.stringify(client.initializeResult?.capabilities)}`,
   );
 
   return client;
