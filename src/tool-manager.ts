@@ -142,11 +142,13 @@ export class ToolManager {
 
     await Promise.all(
       newRules.map(async (ctx) => {
-        ctx.lspClients = await Promise.all(
-          (ctx.rule.action.lsp ?? []).map((lspCommand) =>
-            registerLsp(ctx.rule.document, lspCommand, ctx.rule.name),
-          ),
-        );
+        ctx.lspClients = ctx.rule.action.lsp
+          ? await Promise.all(
+              ctx.rule.action.lsp.map((lspCommand) =>
+                registerLsp(ctx.rule.document, lspCommand, ctx.rule.name),
+              ),
+            )
+          : undefined;
       }),
     );
 
