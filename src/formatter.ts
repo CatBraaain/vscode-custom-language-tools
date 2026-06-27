@@ -6,6 +6,7 @@ import {
   DidChangeTextDocumentNotification,
   DidChangeTextDocumentParams,
 } from "vscode-languageclient/node";
+import { TextDocument as LspTextDocument } from "vscode-languageserver-textdocument";
 
 import { Logger } from "./logger";
 import { ToolManager } from "./tool-manager";
@@ -92,51 +93,16 @@ export class DocumentFormatter {
       } satisfies DocumentFormattingParams,
       this.token,
     );
-    const edits = (response ?? []).map(
-      (edit) =>
-        new vscode.TextEdit(
-          new vscode.Range(
-            new vscode.Position(edit.range.start.line, edit.range.start.character),
-            new vscode.Position(edit.range.end.line, edit.range.end.character),
-          ),
-          edit.newText,
-        ),
+
+    Logger.debug(`LSP returned ${(response ?? []).length} edit(s)`);
+
+    const lspTextDocument = LspTextDocument.create(
+      this.document.uri.toString(),
+      this.document.languageId,
+      this.document.version,
+      currentText,
     );
-
-    Logger.debug(`LSP returned ${edits.length} edit(s)`);
-    return this.getEditedText(currentText, edits);
-  }
-
-  private getEditedText(text: string, edits: vscode.TextEdit[]): string {
-    const chunks: string[] = [];
-
-    const sorted = edits
-      .map((e) => ({
-        start: this.getOffsetFromPosition(text, e.range.start),
-        end: this.getOffsetFromPosition(text, e.range.end),
-        text: e.newText,
-      }))
-      .sort((a, b) => a.start - b.start);
-
-    let lastIndex = 0;
-    for (const e of sorted) {
-      chunks.push(text.slice(lastIndex, e.start));
-      chunks.push(e.text);
-      lastIndex = e.end;
-    }
-    chunks.push(text.slice(lastIndex));
-
-    return chunks.join("");
-  }
-
-  private getOffsetFromPosition(text: string, position: vscode.Position): number {
-    const lines = text.split("\n");
-    let offset = 0;
-    for (let i = 0; i < position.line; i++) {
-      offset += lines[i].length + 1;
-    }
-    offset += position.character;
-    return offset;
+    return LspTextDocument.applyEdits(lspTextDocument, response ?? []);
   }
 
   private async notifyLSPDidChange(client: LanguageClient, newText: string): Promise<void> {
