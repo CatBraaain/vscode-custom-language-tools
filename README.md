@@ -44,19 +44,17 @@ npm i -g vscode-langservers-extracted
       "name": "Python",
       "document": ["python"],
       "action": {
-        "formatter": "uvx ruff check - --fix --unfixable F401",
         "lsp": ["uvx ruff server", "uvx ty server"]
       }
     },
     {
-      "name": "Biome",
+      "name": "Prettier",
       "document": ["javascript", "typescript"],
       "condition": {
-        "when": "grep \"\\\"@biomejs/biome\\\":\" package.json"
+        "when": "grep \"\\\"prettier\\\":\" package.json"
       },
       "action": {
-        "formatter": "npx @biomejs/biome format --stdin-file-path=${filePath}",
-        "lsp": "npx @biomejs/biome lsp-proxy"
+        "formatter": "npx prettier --stdin-filepath ${filePath}"
       }
     },
     {
@@ -66,8 +64,7 @@ npm i -g vscode-langservers-extracted
         "when": "grep \"\\\"vite-plus\\\":\" package.json"
       },
       "action": {
-        "formatter": "vp fmt --stdin-filepath=${filePath}",
-        "lsp": "vp lint --lsp"
+        "lsp": ["vp lint --lsp", "vp fmt --lsp"]
       }
     },
     {
@@ -75,13 +72,12 @@ npm i -g vscode-langservers-extracted
       "document": ["javascript", "typescript"],
       "condition": {
         "whenNot": [
-          "grep \"\\\"@biomejs/biome\\\":\" package.json",
+          "grep \"\\\"prettier\\\":\" package.json",
           "grep \"\\\"vite-plus\\\":\" package.json"
         ]
       },
       "action": {
-        "formatter": "npx oxfmt --stdin-filepath=${filePath}",
-        "lsp": "npx oxlint --lsp"
+        "lsp": ["npx oxlint --lsp", "npx oxfmt --lsp"]
       }
     }
   ]
