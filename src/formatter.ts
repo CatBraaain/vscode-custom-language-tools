@@ -5,7 +5,6 @@ import {
   DocumentFormattingRequest,
   DidChangeTextDocumentNotification,
   DidChangeTextDocumentParams,
-  TextDocumentChangeRegistrationOptions,
 } from "vscode-languageclient/node";
 
 import { Logger } from "./logger";
@@ -49,19 +48,8 @@ export class DocumentFormatter {
     const originalText = this.document.getText();
     let currentText = originalText;
 
-    const lspContexts = this.toolManager.ruleContexts.filter(
-      (ctx) => ctx.lspClients && vscode.languages.match(ctx.rule.document, this.document),
-    );
-    Logger.info(`Matched lsp rules: [${JSON.stringify(lspContexts.map((ctx) => ctx.rule.name))}]`);
-
-    for (const ctx of lspContexts) {
-      for (const client of ctx.lspClients!) {
-        currentText = await this.formatWithLsp(client, currentText);
-        await this.notifyLSPDidChange(client, currentText);
-      }
-    }
-
-    currentText = await this.formatWithCommand(currentText);
+    currentText = await this.formatWithLsps(currentText);
+    currentText = await this.formatWithCommands(currentText);
 
     Logger.info("Format finished");
     if (currentText === originalText) {
@@ -72,6 +60,24 @@ export class DocumentFormatter {
       );
       return [new vscode.TextEdit(fullRange, currentText)];
     }
+  }
+
+  private async formatWithLsps(currentText: string): Promise<string> {
+    const formattableClients = this.toolManager.ruleContexts
+      .filter((ctx) => ctx.lspClients && vscode.languages.match(ctx.rule.document, this.document))
+      .flatMap((ctx) =>
+        ctx.lspClients!.filter(
+          (client) => client.initializeResult?.capabilities.documentFormattingProvider,
+        ),
+      );
+
+    for (const client of formattableClients) {
+      Logger.info(`Format with LSP: ${client.name}`);
+      currentText = await this.formatWithLsp(client, currentText);
+      await this.notifyLSPDidChange(client, currentText);
+    }
+
+    return currentText;
   }
 
   private async formatWithLsp(client: LanguageClient, currentText: string): Promise<string> {
@@ -153,8 +159,8 @@ export class DocumentFormatter {
     Logger.debug(`Sent didChange notification to LSP server`);
   }
 
-  private async formatWithCommand(inputText: string): Promise<string> {
-    const matchedRules = this.toolManager.ruleContexts
+  private async formatWithCommands(inputText: string): Promise<string> {
+    const formatterRules = this.toolManager.ruleContexts
       .filter(
         (ctx) =>
           ctx.conditionMatched &&
@@ -163,40 +169,38 @@ export class DocumentFormatter {
       )
       .map((ctx) => ctx.rule);
 
-    Logger.debug(`Matched formatter rules: [${matchedRules.map((r) => r.name).join(", ")}]`);
+    Logger.debug(`Matched formatter rules: [${formatterRules.map((r) => r.name).join(", ")}]`);
 
-    const commands = matchedRules.flatMap((rule) =>
-      rule.action.formatter!.map((formatter) =>
-        formatter.replace("${filePath}", this.document.fileName),
-      ),
-    );
     // when edit files outside of workspace, use the first workspace
     const cwd =
       vscode.workspace.getWorkspaceFolder(this.document.uri)?.uri.fsPath ??
       vscode.workspace.workspaceFolders?.at(0)?.uri.fsPath;
 
-    Logger.info("Format");
-    Logger.info(`  commands: [${commands.join(", ")}]`);
-    Logger.info(`  cwd: ${cwd}`);
-
     let currentText = inputText;
 
-    for (const command of commands) {
-      const res = await execa({
-        input: currentText,
-        shell: true,
-        cwd,
-        reject: false,
-        stripFinalNewline: false,
-      })`${command}`;
+    for (const rule of formatterRules) {
+      const commands = rule.action.formatter!.map((formatter) =>
+        formatter.replace("${filePath}", this.document.fileName),
+      );
+      for (const command of commands) {
+        Logger.info(`Format with CLI: ${rule.name} (${command})`);
 
-      if (res.exitCode === 0) {
-        currentText = res.stdout;
-      } else {
-        Logger.warn(
-          `Formatter failed (${command}): ${JSON.stringify({ exitCode: res.exitCode, stderr: res.stderr })}`,
-        );
-        break;
+        const res = await execa({
+          input: currentText,
+          shell: true,
+          cwd,
+          reject: false,
+          stripFinalNewline: false,
+        })`${command}`;
+
+        if (res.exitCode === 0) {
+          currentText = res.stdout;
+        } else {
+          Logger.warn(
+            `Formatter failed (${command}): ${JSON.stringify({ exitCode: res.exitCode, stderr: res.stderr })}`,
+          );
+          break;
+        }
       }
     }
 

@@ -25,7 +25,7 @@ export async function registerLsp(
   const MAX_RESTART = 3;
 
   const client = new LanguageClient(
-    ruleName,
+    `${ruleName} (${command})`,
     {
       command: cmd,
       args,
@@ -65,6 +65,11 @@ export async function registerLsp(
   client.getFeature(DocumentRangeFormattingRequest.method)?.clear();
   client.getFeature(DocumentOnTypeFormattingRequest.method)?.clear();
   Logger.debug(`${ruleName} - LSP registered`);
+  Logger.debug(
+    client.initializeResult?.capabilities.documentFormattingProvider
+      ? "formattable"
+      : "not formattable",
+  );
 
   return client;
 }
