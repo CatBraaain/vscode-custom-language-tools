@@ -66,11 +66,7 @@ export class DocumentFormatter {
   private async formatWithLsps(currentText: string): Promise<string> {
     const formattableClients = this.toolManager.ruleContexts
       .filter((ctx) => ctx.lspClients && vscode.languages.match(ctx.rule.document, this.document))
-      .flatMap((ctx) =>
-        ctx.lspClients!.filter(
-          (client) => client.initializeResult?.capabilities.documentFormattingProvider,
-        ),
-      );
+      .flatMap((ctx) => ctx.lspClients!);
 
     for (const client of formattableClients) {
       Logger.info(`Format with LSP: ${client.name}`);

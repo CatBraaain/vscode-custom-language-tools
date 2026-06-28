@@ -68,16 +68,7 @@ export async function registerLsp(
   client.getFeature(DocumentFormattingRequest.method)?.clear();
   client.getFeature(DocumentRangeFormattingRequest.method)?.clear();
   client.getFeature(DocumentOnTypeFormattingRequest.method)?.clear();
-  Logger.debug(
-    `${ruleName} (${command}) - LSP registered - ${
-      client.initializeResult?.capabilities.documentFormattingProvider
-        ? "formattable"
-        : "not formattable"
-    }`,
-  );
-  Logger.debug(
-    `${ruleName} (${command}) - LSP registered - ${JSON.stringify(client.initializeResult?.capabilities)}`,
-  );
+  Logger.debug(`${ruleName} (${command}) - LSP registered`);
 
   return client;
 }
