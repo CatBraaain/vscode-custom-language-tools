@@ -1,3 +1,17 @@
+## [0.0.4] - 2026-06-28
+
+### 🚀 Features
+
+- Remove rangeFormatting feature
+- Add support for formatting with multiple LSPs and commands
+- Enhance log
+- Add traceOutputChannel for each LSP
+- Add error handling on formatWithLsp
+
+### 🚜 Refactor
+
+- Use LspTextDocument
+
 ## [0.0.3] - 2026-06-22
 
 ### 🐛 Bug Fixes
