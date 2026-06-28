@@ -69,56 +69,57 @@ export class DocumentFormatter {
       .flatMap((ctx) => ctx.lspClients!);
 
     for (const client of formattableClients) {
-      Logger.info(`Format with LSP: ${client.name}`);
       currentText = await this.formatWithLsp(client, currentText);
-      await this.notifyLSPDidChange(client, currentText);
     }
 
     return currentText;
   }
 
   private async formatWithLsp(client: LanguageClient, currentText: string): Promise<string> {
-    const response = await client.sendRequest<vscode.TextEdit[] | null>(
-      DocumentFormattingRequest.method,
-      {
-        textDocument: { uri: this.document.uri.toString() },
-        options: {
-          tabSize: this.options.tabSize,
-          insertSpaces: this.options.insertSpaces,
+    try {
+      await client.sendNotification(DidChangeTextDocumentNotification.method, {
+        textDocument: {
+          uri: this.document.uri.toString(),
+          version: this.document.version,
         },
-      } satisfies DocumentFormattingParams,
-      this.token,
-    );
-
-    Logger.debug(`LSP returned ${(response ?? []).length} edit(s)`);
-
-    const lspTextDocument = LspTextDocument.create(
-      this.document.uri.toString(),
-      this.document.languageId,
-      this.document.version,
-      currentText,
-    );
-    return LspTextDocument.applyEdits(lspTextDocument, response ?? []);
-  }
-
-  private async notifyLSPDidChange(client: LanguageClient, newText: string): Promise<void> {
-    await client.sendNotification(DidChangeTextDocumentNotification.method, {
-      textDocument: {
-        uri: this.document.uri.toString(),
-        version: this.document.version,
-      },
-      contentChanges: [
-        {
-          range: {
-            start: { line: 0, character: 0 },
-            end: { line: this.document.lineCount, character: 0 },
+        contentChanges: [
+          {
+            range: {
+              start: { line: 0, character: 0 },
+              end: { line: this.document.lineCount, character: 0 },
+            },
+            rangeLength: this.document.getText().length,
+            text: currentText,
           },
-          rangeLength: this.document.getText().length,
-          text: newText,
-        },
-      ],
-    } satisfies DidChangeTextDocumentParams);
-    Logger.debug(`Sent didChange notification to LSP server`);
+        ],
+      } satisfies DidChangeTextDocumentParams);
+
+      const response = await client.sendRequest<vscode.TextEdit[] | null>(
+        DocumentFormattingRequest.method satisfies string,
+        {
+          textDocument: { uri: this.document.uri.toString() },
+          options: {
+            tabSize: this.options.tabSize,
+            insertSpaces: this.options.insertSpaces,
+          },
+        } satisfies DocumentFormattingParams,
+        this.token,
+      );
+      Logger.info(`Format with LSP: ${client.name}`);
+      Logger.debug(`  ${JSON.stringify(response)}`);
+
+      const lspTextDocument = LspTextDocument.create(
+        this.document.uri.toString(),
+        this.document.languageId,
+        this.document.version,
+        currentText,
+      );
+      return LspTextDocument.applyEdits(lspTextDocument, response ?? []);
+    } catch (e) {
+      Logger.debug(`Format with LSP: ${client.name}`);
+      Logger.debug(`  error: "${e as string}"`);
+      return currentText;
+    }
   }
 
   private async formatWithCommands(inputText: string): Promise<string> {
