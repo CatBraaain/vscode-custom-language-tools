@@ -2,6 +2,24 @@
 
 A unified VSCode extension for configuring custom language settings, formatters, and Language Server Protocol (LSP) servers through a single rule-based configuration system.
 
+## Project Status
+
+This project has been discontinued.
+
+This extension was originally created to solve project-specific lsp/formatter switching by managing lsp/formatter directly.
+
+The original idea was to manage LSP servers as standalone CLI processes instead of having the extension control them, making it easy to switch them on a per-project basis.
+
+In practice, however, this approach proved unreliable. During development, several issues became apparent:
+
+- Some LSP servers require server-specific initializeOptions.
+- Some rely on additional protocol interactions (such as dynamic registration) before all features become available.
+- Others assume behaviors that are specific to certain clients.
+
+As a result, simply launching an LSP server was not enough to provide a consistent experience across different implementations. Supporting these differences would require server-specific compatibility logic, which conflicted with the goal of providing a simple, generic solution.
+
+For that reason, development of `vscode-custom-language-tools` was discontinued. The concept evolved into `vscode-conditional-config`, which achieves the original goal by auto-switching VS Code settings to switch lsp/formatter extensions.
+
 ## Features
 
 ### Custom Formatters
@@ -116,7 +134,7 @@ Actions applied when the rule is active.
 
 Restarts all language services (formatters, LSP servers).
 
-## Related Projects
+## Similar Concept Projects
 
 - https://github.com/JKillian/vscode-custom-local-formatters
 - https://github.com/pepebecker/vscode-lsp-config
